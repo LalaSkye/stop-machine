@@ -2,6 +2,10 @@
 
 A deterministic three-state stop controller.
 
+## Why this exists
+
+Stop conditions in most systems are afterthoughts — flags checked late, states that can be bypassed, or halts that leave the system in an undefined state. This primitive makes stopping a first-class structural guarantee: three states, one direction, no reversal. Once the machine reaches RED, it stays there. No configuration can override it, no runtime condition can reset it. If your system needs a provably terminal stop, this is the brick.
+
 ## States
 
 ```
