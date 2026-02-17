@@ -24,6 +24,5 @@ jobs:
       - name: Install dependencies
         run: pip install pytest
 
-      - name: Run stop-machine tests
-        working-directory: primitives/stop-machine
-        run: pytest test_stop_machine.py -v --tb=short
+      - name: Run tests
+        run: python -m pytest primitives -v
