@@ -8,25 +8,51 @@ Covers:
 - Policy: no self-approve execution
 """
 
+import importlib.util
+import sys
+from pathlib import Path
+
 import pytest
 
-from envelope_parser import Envelope, parse_envelope
-from rules import (
-    Exit,
-    Violation,
-    rule_has_header,
-    rule_has_msg_id,
-    rule_has_sender,
-    rule_has_recipient,
-    rule_has_mode,
-    rule_has_scope,
-    rule_has_goal,
-    rule_valid_sender,
-    rule_valid_exit,
-    rule_response_must_have_exit,
-    rule_no_self_approve_exec,
-)
-from gate import evaluate, GateResult
+# ---------------------------------------------------------------------------
+# Robust local imports via importlib (avoids sibling gate.py collision)
+# ---------------------------------------------------------------------------
+_HERE = Path(__file__).resolve().parent
+
+
+def _load_local(module_name: str):
+    """Load a module from this directory by file path."""
+    path = _HERE / f"{module_name}.py"
+    spec = importlib.util.spec_from_file_location(module_name, str(path))
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+_ep = _load_local("envelope_parser")
+Envelope = _ep.Envelope
+parse_envelope = _ep.parse_envelope
+
+_ru = _load_local("rules")
+Exit = _ru.Exit
+Violation = _ru.Violation
+rule_has_header = _ru.rule_has_header
+rule_has_msg_id = _ru.rule_has_msg_id
+rule_has_sender = _ru.rule_has_sender
+rule_has_recipient = _ru.rule_has_recipient
+rule_has_mode = _ru.rule_has_mode
+rule_has_scope = _ru.rule_has_scope
+rule_has_goal = _ru.rule_has_goal
+rule_valid_sender = _ru.rule_valid_sender
+rule_valid_exit = _ru.rule_valid_exit
+rule_response_must_have_exit = _ru.rule_response_must_have_exit
+rule_no_self_approve_exec = _ru.rule_no_self_approve_exec
+
+_ga = _load_local("gate")
+evaluate = _ga.evaluate
+GateResult = _ga.GateResult
+
 
 
 # ---------------------------------------------------------------------------
@@ -53,8 +79,7 @@ BODY:
   output_spec:
     type: NOTE
     format: MARKDOWN
-  payload:
-    This is a test payload.
+  payload: This is a test payload.
 RETURN:
   in_reply_to: ""
   exit:
@@ -83,15 +108,13 @@ BODY:
   output_spec:
     type: NOTE
     format: MARKDOWN
-  payload:
-    Response payload here.
+  payload: Response payload here.
 RETURN:
   in_reply_to: "msg-0008"
   exit: ALLOW
   reason:
     - All checks passed.
-  payload:
-    Conformance verified.
+  payload: Conformance verified.
 """
 
 
@@ -125,11 +148,11 @@ def _make_envelope(**overrides) -> Envelope:
 # R0 structural pre-check tests
 # ---------------------------------------------------------------------------
 
+
 class TestR0Structural:
     def test_valid_envelope_passes_r0(self):
         env = parse_envelope(VALID_ENVELOPE_RAW)
         result = evaluate(env)
-        # Should not get DENY (no structural failures)
         assert result.exit != "DENY"
 
     def test_missing_header_is_deny(self):
@@ -191,6 +214,7 @@ class TestR0Structural:
 # EXIT_ENUM_ERRATA v0.1 tests
 # ---------------------------------------------------------------------------
 
+
 class TestExitEnum:
     def test_allow_is_valid(self):
         env = _make_envelope(exit_code="ALLOW")
@@ -247,6 +271,7 @@ class TestExitEnum:
 # Blank-field clarification (msg-0007)
 # ---------------------------------------------------------------------------
 
+
 class TestBlankField:
     def test_blank_exit_in_request_is_ok(self):
         env = _make_envelope(msg_id="msg-0010", exit_code="")
@@ -267,9 +292,9 @@ class TestBlankField:
 # FIRST_FAIL evaluation policy
 # ---------------------------------------------------------------------------
 
+
 class TestFirstFail:
     def test_first_fail_halts_on_first_violation(self):
-        # Missing msg_id AND missing sender -- FIRST_FAIL should report only 1
         env = _make_envelope(msg_id="", sender="")
         result = evaluate(env, policy="FIRST_FAIL")
         assert len(result.violations) == 1
@@ -285,6 +310,7 @@ class TestFirstFail:
 # ---------------------------------------------------------------------------
 # Policy: no self-approve execution
 # ---------------------------------------------------------------------------
+
 
 class TestSelfApprove:
     def test_human_can_approve_exec(self):
@@ -318,6 +344,7 @@ class TestSelfApprove:
 # Invalid agent tests
 # ---------------------------------------------------------------------------
 
+
 class TestAgentValidation:
     def test_valid_agents_pass(self):
         for agent in ["HUMAN", "TRINITY", "MORPHEUS"]:
@@ -334,6 +361,7 @@ class TestAgentValidation:
 # ---------------------------------------------------------------------------
 # Gate-level integration tests
 # ---------------------------------------------------------------------------
+
 
 class TestGateIntegration:
     def test_valid_request_gets_allow(self):
@@ -361,5 +389,4 @@ class TestGateIntegration:
     def test_blank_response_exit_gets_hold(self):
         env = _make_envelope(msg_id="msg-0099-R", exit_code="")
         result = evaluate(env)
-        # Should be HOLD (not DENY, since structure is present)
         assert result.exit == "HOLD"
