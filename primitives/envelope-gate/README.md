@@ -32,6 +32,7 @@ Parses envelopes from the comms-center postbox, validates them against frozen pr
 | `rules.py` | Pure-function conformance rules (R0, enum, policy) |
 | `gate.py` | Evaluator: runs rules, classifies exit, returns `GateResult` |
 | `test_envelope_gate.py` | Full test suite (30+ tests) |
+| `cli.py` | CLI tool: `check` and `log` commands for batch scanning |
 
 ## Protocol references
 
@@ -68,3 +69,20 @@ result = evaluate(env)
 print(result.exit)        # ALLOW | HOLD | DENY | SILENCE
 print(result.violations)  # [] if ALLOW
 ```
+
+## CLI
+
+Scan a comms-center file and print a conformance table:
+
+```bash
+python primitives/envelope-gate/cli.py check ALVIANTECH_COMMS_CENTER_v0.1.md
+```
+
+Scan and append results to the gate log:
+
+```bash
+python primitives/envelope-gate/cli.py log ALVIANTECH_COMMS_CENTER_v0.1.md GATE_LOG_v0.1.md
+```
+
+Output columns: `msg_id | from | to | exit | violations`
+
