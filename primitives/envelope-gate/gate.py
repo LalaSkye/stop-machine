@@ -2,25 +2,49 @@
 
 Evaluates parsed envelopes against the frozen protocol rules.
 Supports two evaluation policies:
-  - FIRST_FAIL: halt on first violation (default, frozen at msg-0003).
-  - ACCUMULATE_ALL: collect all violations (available for diagnostics).
+    - FIRST_FAIL: halt on first violation (default, frozen at msg-0003).
+    - ACCUMULATE_ALL: collect all violations (available for diagnostics).
 
 Decision mapping:
-  - No violations        -> ALLOW
-  - Structural violation  -> DENY
-  - Policy violation      -> HOLD
-  - Not addressed to gate -> SILENCE
+    - No violations      -> ALLOW
+    - Structural violation  -> DENY
+    - Policy violation      -> HOLD
+    - Not addressed to gate -> SILENCE
 
 Deterministic. No side effects. No network calls.
 """
 
 from __future__ import annotations
 
+import importlib.util
+import sys
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import List
 
-from envelope_parser import Envelope
-from rules import ALL_RULES, Exit, Violation
+# ---------------------------------------------------------------------------
+# Robust local imports via importlib (avoids sibling gate.py collision)
+# ---------------------------------------------------------------------------
+_HERE = Path(__file__).resolve().parent
+
+
+def _load_local(module_name: str):
+    """Load a module from this directory by file path."""
+    path = _HERE / f"{module_name}.py"
+    spec = importlib.util.spec_from_file_location(module_name, str(path))
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+_ep = _load_local("envelope_parser")
+Envelope = _ep.Envelope
+
+_ru = _load_local("rules")
+ALL_RULES = _ru.ALL_RULES
+Exit = _ru.Exit
+Violation = _ru.Violation
 
 
 @dataclass(frozen=True)
