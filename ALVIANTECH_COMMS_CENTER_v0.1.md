@@ -185,3 +185,149 @@ RETURN:
 *End of msg-0001. Next message appended below.*
 
 ---
+
+
+### msg-0002
+
+```
+ALVIANTECH_ENVELOPE v0.1
+
+PORTS:
+  msg_id: "msg-0002"
+  ts_utc: "2026-02-18T09:30:00Z"
+  from: HUMAN
+  to: MORPHEUS
+  mode: TEST
+  scope: NON_EXEC
+
+BODY:
+  goal: Correct evaluation policy drift in committed postbox file.
+
+  inputs:
+    - Commit states evaluation policy frozen at "HUMAN-IN-THE-LOOP".
+    - TRINITY_CONFORMANCE_CHECK v0.1 defines allowed policies:
+        {FIRST_FAIL | ACCUMULATE_ALL}.
+    - "HUMAN-IN-THE-LOOP" is not a valid evaluation policy enum value.
+
+  constraints:
+    must:
+      - Align evaluation policy strictly with defined enum.
+      - Propose corrective commit (append-only discipline).
+      - Do not mutate prior history silently.
+    must_not:
+      - No schema mutation.
+      - No new policy names introduced.
+
+  output_spec:
+    type: NOTE
+    format: MARKDOWN
+
+  payload:
+    Confirm:
+      1) Whether evaluation policy in file is invalid.
+      2) Which allowed enum value should be frozen.
+      3) Exact corrective commit message to apply.
+
+RETURN:
+  in_reply_to: "msg-0002"
+  exit:
+  reason:
+    -
+  payload:
+
+```
+
+---
+
+*End of msg-0002. Next message appended below.*
+
+---
+
+### msg-0002-R
+
+```
+ALVIANTECH_ENVELOPE v0.1
+
+PORTS:
+  msg_id: "msg-0002-R"
+  ts_utc: "2026-02-18T09:35:00Z"
+  from: MORPHEUS
+  to: HUMAN
+  mode: TEST
+  scope: NON_EXEC
+
+BODY:
+  goal: CORRECTION: Resolve evaluation policy enum mismatch in
+        ALVIANTECH_COMMS_CENTER_v0.1.md Section 2.5.
+  inputs:
+    - Section 2.5 currently reads: "Policy: HUMAN-IN-THE-LOOP REVIEW".
+    - TRINITY_CONFORMANCE_CHECK v0.1 defines evaluation_policy enum as:
+        {FIRST_FAIL | ACCUMULATE_ALL}.
+    - "HUMAN-IN-THE-LOOP" does not appear in that enum.
+  constraints:
+    must:
+      - Select from {FIRST_FAIL | ACCUMULATE_ALL} only.
+      - Preserve append-only discipline (no edit to prior commits).
+      - Corrective content appended as new section, not inline edit.
+    must_not:
+      - No schema mutation.
+      - No new policy names introduced.
+  output_spec:
+    type: NOTE
+    format: MARKDOWN
+  payload:
+    ANALYSIS:
+
+    1) INVALID — confirmed. The committed value "HUMAN-IN-THE-LOOP"
+       is not a member of the allowed evaluation_policy enum
+       {FIRST_FAIL | ACCUMULATE_ALL}. This constitutes policy drift
+       introduced during the initial file authoring.
+
+    2) RECOMMENDED ENUM VALUE: FIRST_FAIL.
+       Rationale: FIRST_FAIL halts evaluation on the first constraint
+       violation and surfaces it immediately. This aligns with the
+       spirit of the existing Section 2.5 procedure (HUMAN reviews,
+       then approves/rejects/defers). ACCUMULATE_ALL would batch
+       violations silently, which conflicts with the immediate-review
+       intent already described.
+
+    3) CORRECTIVE ACTION:
+       Append a new section "2.5.1 Evaluation Policy Correction" to
+       the MESSAGE LOG via a correction envelope. The correction
+       states:
+         - Section 2.5 evaluation_policy value is hereby corrected
+           from "HUMAN-IN-THE-LOOP" to "FIRST_FAIL".
+         - The FROZEN lock applies to FIRST_FAIL from this point.
+         - The procedural text in Section 2.5 (human review workflow)
+           remains valid as operational guidance but is subordinate
+           to the enum value for conformance purposes.
+
+       Exact commit message:
+         append: msg-0002 + msg-0002-R — CORRECTION evaluation_policy
+         drift HUMAN-IN-THE-LOOP -> FIRST_FAIL
+
+    NOTE ON SEPARATION OF CONCERNS:
+    The "HUMAN-IN-THE-LOOP" text describes an operational procedure
+    (how scope/exec approval works). The evaluation_policy enum
+    describes how TRINITY processes constraint checks. These are
+    two different layers. The procedure remains valid; only the
+    enum label was incorrect.
+
+RETURN:
+  in_reply_to: "msg-0002"
+  exit: PASS
+  reason:
+    - Policy drift confirmed: "HUMAN-IN-THE-LOOP" not in enum.
+    - Corrective value identified: FIRST_FAIL.
+    - Append-only correction path defined.
+    - No schema mutation required.
+  payload:
+    Awaiting HUMAN approval to commit correction.
+
+```
+
+---
+
+*End of msg-0002-R. Next message appended below.*
+
+---
