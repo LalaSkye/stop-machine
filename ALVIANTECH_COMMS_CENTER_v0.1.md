@@ -1022,3 +1022,153 @@ RETURN:
 *End of msg-0006-R. Next message appended below.*
 
 ---
+
+
+### msg-0007
+
+```
+ALVIANTECH_ENVELOPE v0.1
+
+PORTS:
+  msg_id: "msg-0007"
+  ts_utc: "2026-02-18T10:35:00Z"
+  from: HUMAN
+  to: MORPHEUS
+  mode: DESIGN
+  scope: NON_EXEC
+
+BODY:
+  goal: Approve and freeze EXIT_ENUM_ERRATA v0.1 with one
+        clarification re "blank".
+
+  inputs:
+    - msg-0006-R delivered EXIT_ENUM_ERRATA v0.1.
+
+  constraints:
+    must:
+      - Freeze EXIT_ENUM_ERRATA v0.1 as binding.
+      - Clarify: "blank" is not an enum value.
+      - Rule: RETURN.exit may be empty/omitted only in request
+        placeholders; any actual response must set
+        RETURN.exit in {ALLOW|HOLD|DENY|SILENCE}.
+    must_not:
+      - Do not expand canonical enum.
+      - No retroactive edits; errata governs interpretation only.
+
+  output_spec:
+    type: NOTE
+    format: MARKDOWN
+
+  payload:
+    HUMAN approves freeze of EXIT_ENUM_ERRATA v0.1, with the
+    "blank != value" clarification above.
+
+RETURN:
+  in_reply_to: "msg-0007"
+  exit:
+  reason:
+    -
+  payload:
+
+```
+
+---
+
+*End of msg-0007. Next message appended below.*
+
+---
+
+### msg-0007-R
+
+```
+ALVIANTECH_ENVELOPE v0.1
+
+PORTS:
+  msg_id: "msg-0007-R"
+  ts_utc: "2026-02-18T10:40:00Z"
+  from: MORPHEUS
+  to: HUMAN
+  mode: DESIGN
+  scope: NON_EXEC
+
+BODY:
+  goal: Acknowledge HUMAN approval and freeze EXIT_ENUM_ERRATA v0.1
+        with blank-field clarification.
+  inputs:
+    - msg-0007 grants HUMAN approval for EXIT_ENUM_ERRATA v0.1.
+    - msg-0006-R delivered the errata artefact.
+    - HUMAN adds clarification: blank is not an enum value.
+  constraints:
+    must:
+      - Record the freeze with timestamp and authority.
+      - Integrate blank-field clarification into the errata.
+      - State the complete binding rules.
+    must_not:
+      - Do not expand canonical enum.
+      - No retroactive edits to prior messages.
+  output_spec:
+    type: NOTE
+    format: MARKDOWN
+  payload:
+    FREEZE RECORD: EXIT_ENUM_ERRATA v0.1
+    =====================================
+    Frozen at:   2026-02-18T10:40:00Z
+    Authority:   HUMAN (msg-0007)
+    Artefact:    EXIT_ENUM_ERRATA v0.1 (msg-0006-R)
+    Status:      FROZEN (binding)
+
+    CLARIFICATION ADDENDUM (per msg-0007):
+    ---------------------------------------
+    "blank" is NOT an enum value and is NOT a member of the
+    canonical set {ALLOW | HOLD | DENY | SILENCE}.
+
+    The rules for RETURN.exit are now:
+
+    1. REQUEST ENVELOPES (from: HUMAN or agent issuing a request):
+       RETURN.exit may be empty/omitted. This indicates the field
+       is a placeholder awaiting the respondent's value. Empty exit
+       in a request is syntactically valid but carries no semantic
+       meaning.
+
+    2. RESPONSE ENVELOPES (any -R reply message):
+       RETURN.exit MUST be set to exactly one of:
+         { ALLOW | HOLD | DENY | SILENCE }
+       An empty/omitted RETURN.exit in a response envelope is a
+       conformance violation.
+
+    3. COMPLETE BINDING RULES:
+       a) Canonical enum: {ALLOW | HOLD | DENY | SILENCE}.
+       b) Blank/empty: valid in requests only, invalid in responses.
+       c) Legacy values (PASS, FAIL, DEFER, ESCALATE): mapped per
+          EXIT_ENUM_ERRATA v0.1 Section 2 for messages <= msg-0005-R.
+          Prohibited in all messages after msg-0005-R.
+       d) Any other value: conformance violation.
+
+    CORRECTION CHAIN (complete):
+    msg-0005   -> HUMAN flagged RETURN.exit enum drift
+    msg-0005-R -> MORPHEUS audited postbox, issued correction note
+    msg-0006   -> HUMAN requested EXIT_ENUM_ERRATA v0.1 artefact
+    msg-0006-R -> MORPHEUS delivered errata (exit: ALLOW)
+    msg-0007   -> HUMAN approved freeze + blank clarification
+    msg-0007-R -> MORPHEUS acknowledged freeze (this message)
+
+RETURN:
+  in_reply_to: "msg-0007"
+  exit: ALLOW
+  reason:
+    - HUMAN approval received for EXIT_ENUM_ERRATA v0.1 freeze.
+    - Blank-field clarification integrated.
+    - Complete binding rules stated.
+    - No enum expansion performed.
+    - No retroactive edits to prior messages.
+  payload:
+    EXIT_ENUM_ERRATA v0.1 is now FROZEN with blank-field
+    clarification. Correction chain complete.
+
+```
+
+---
+
+*End of msg-0007-R. Next message appended below.*
+
+---
