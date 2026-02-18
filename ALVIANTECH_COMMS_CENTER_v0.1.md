@@ -813,3 +813,212 @@ RETURN:
 *End of msg-0005-R. Next message appended below.*
 
 ---
+
+
+### msg-0006
+
+```
+ALVIANTECH_ENVELOPE v0.1
+
+PORTS:
+  msg_id: "msg-0006"
+  ts_utc: "2026-02-18T10:25:00Z"
+  from: HUMAN
+  to: MORPHEUS
+  mode: DESIGN
+  scope: NON_EXEC
+
+BODY:
+  goal: Freeze EXIT_ENUM_ERRATA v0.1 mapping for legacy
+        PASS/FAIL/DEFER/ESCALATE values.
+
+  inputs:
+    - msg-0005-R identified poisoned Section 2.1 template enum.
+    - Append-only discipline prevents editing historical messages.
+
+  constraints:
+    must:
+      - Create an explicit ERRATA block defining a deterministic
+        mapping:
+          PASS -> ALLOW
+          FAIL -> HOLD
+          DEFER -> HOLD
+          ESCALATE -> HOLD (deprecated)
+      - State the mapping applies only to messages dated/numbered
+        <= msg-0005-R.
+      - Mark Section 2.1 template as KNOWN_WRONG_PENDING_R1.
+      - Confirm canonical enum remains {ALLOW|HOLD|DENY|SILENCE}
+        going forward.
+    must_not:
+      - Do not expand canonical RETURN.exit enum.
+      - Do not rewrite or "edit" prior messages; mapping only.
+
+  output_spec:
+    type: ARTEFACT
+    format: MARKDOWN
+
+  payload:
+    Produce EXIT_ENUM_ERRATA v0.1 text to append into the postbox
+    (single block, ready to paste).
+
+RETURN:
+  in_reply_to: "msg-0006"
+  exit:
+  reason:
+    -
+  payload:
+
+```
+
+---
+
+*End of msg-0006. Next message appended below.*
+
+---
+
+### msg-0006-R
+
+```
+ALVIANTECH_ENVELOPE v0.1
+
+PORTS:
+  msg_id: "msg-0006-R"
+  ts_utc: "2026-02-18T10:30:00Z"
+  from: MORPHEUS
+  to: HUMAN
+  mode: DESIGN
+  scope: NON_EXEC
+
+BODY:
+  goal: Deliver EXIT_ENUM_ERRATA v0.1 artefact for HUMAN approval.
+  inputs:
+    - msg-0005-R established that RETURN.exit enum in Section 2.1
+      is wrong ({PASS|FAIL|DEFER|ESCALATE} instead of
+      {ALLOW|HOLD|DENY|SILENCE}).
+    - msg-0006 requests a frozen errata mapping block.
+    - Append-only discipline: no edits to prior messages.
+  constraints:
+    must:
+      - Deterministic mapping for all legacy values.
+      - Scope limited to messages <= msg-0005-R.
+      - Section 2.1 template flagged KNOWN_WRONG_PENDING_R1.
+      - Canonical enum confirmed going forward.
+    must_not:
+      - Do not expand canonical RETURN.exit enum.
+      - Do not rewrite prior messages.
+  output_spec:
+    type: ARTEFACT
+    format: MARKDOWN
+  payload:
+
+    =========================================================
+    EXIT_ENUM_ERRATA v0.1
+    =========================================================
+    Issued:     2026-02-18T10:30:00Z
+    Authority:  HUMAN (msg-0006) + MORPHEUS (msg-0006-R)
+    Status:     FROZEN (pending HUMAN approval of this message)
+    Scope:      All messages in this postbox with msg_id
+                <= msg-0005-R (i.e., msg-0001 through msg-0005-R)
+    =========================================================
+
+    1. CANONICAL RETURN.exit ENUM (BINDING)
+    ----------------------------------------
+    RETURN.exit = { ALLOW | HOLD | DENY | SILENCE }
+
+    This is the ONLY valid set of values for the RETURN.exit
+    field from this point forward. No other values are permitted.
+
+    | Value   | Meaning                                       |
+    |---------|-----------------------------------------------|
+    | ALLOW   | Constraints satisfied. Proceed as requested.  |
+    | HOLD    | Issue detected. Halted for review/correction. |
+    | DENY    | Permanently rejected. No path forward.        |
+    | SILENCE | No response required or warranted.            |
+
+    2. LEGACY VALUE MAPPING (DETERMINISTIC)
+    ----------------------------------------
+    The following values appeared in messages <= msg-0005-R due
+    to the poisoned Section 2.1 schema template. They are hereby
+    mapped as follows for all retroactive conformance purposes:
+
+    | Legacy value | Maps to | Rationale                       |
+    |--------------|---------|---------------------------------|
+    | PASS         | ALLOW   | Constraints met; proceed.       |
+    | FAIL         | HOLD    | Violation found; held for review.|
+    | DEFER        | HOLD    | Decision deferred; held.        |
+    | ESCALATE     | HOLD    | Deprecated. Held pending R1.    |
+    | blank        | (valid) | No exit code; remains valid.    |
+
+    Affected messages:
+      msg-0002-R: PASS -> ALLOW
+      msg-0003-R: PASS -> ALLOW
+      msg-0004-R: FAIL -> HOLD
+
+    Messages with blank exit values (msg-0001, msg-0002, msg-0003,
+    msg-0004, msg-0005) are unaffected.
+
+    3. SECTION 2.1 TEMPLATE STATUS
+    ----------------------------------------
+    The RETURN.exit line in the Section 2.1 schema template:
+
+      exit: {{PASS | FAIL | DEFER | ESCALATE | blank}}
+
+    is hereby marked:
+
+      STATUS: KNOWN_WRONG_PENDING_R1
+
+    The correct template line (for R1 amendment) should read:
+
+      exit: {{ALLOW | HOLD | DENY | SILENCE | blank}}
+
+    Until R1 is issued, this errata takes precedence over the
+    Section 2.1 template for all conformance purposes.
+
+    4. FORWARD RULES
+    ----------------------------------------
+    a) All messages with msg_id > msg-0005-R MUST use only
+       {ALLOW | HOLD | DENY | SILENCE | blank} as RETURN.exit
+       values.
+    b) Any message using PASS, FAIL, DEFER, or ESCALATE as a
+       RETURN.exit value after this errata is a conformance
+       violation.
+    c) PASS and FAIL remain valid as NARRATIVE text in payload,
+       conformance check results, and descriptive content. They
+       are NOT valid as RETURN.exit field values.
+    d) ESCALATE is fully deprecated. It may not be used in any
+       context as a RETURN.exit value. If escalation semantics
+       are needed, use HOLD with reason explaining the escalation.
+
+    5. AMENDMENT PATH
+    ----------------------------------------
+    This errata will be superseded when R1 is issued, which will:
+      - Correct the Section 2.1 schema template inline.
+      - Absorb this errata into the canonical schema.
+      - Retire the KNOWN_WRONG_PENDING_R1 flag.
+    Until R1, this errata is the binding reference.
+
+    =========================================================
+    END OF EXIT_ENUM_ERRATA v0.1
+    =========================================================
+
+RETURN:
+  in_reply_to: "msg-0006"
+  exit: ALLOW
+  reason:
+    - EXIT_ENUM_ERRATA v0.1 artefact produced.
+    - Deterministic mapping defined for all legacy values.
+    - Scope limited to messages <= msg-0005-R.
+    - Section 2.1 template flagged KNOWN_WRONG_PENDING_R1.
+    - Canonical enum confirmed: {ALLOW|HOLD|DENY|SILENCE}.
+    - No enum expansion. No prior messages edited.
+  payload:
+    EXIT_ENUM_ERRATA v0.1 delivered. Awaiting HUMAN approval
+    to freeze.
+
+```
+
+---
+
+*End of msg-0006-R. Next message appended below.*
+
+---
