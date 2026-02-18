@@ -331,3 +331,140 @@ RETURN:
 *End of msg-0002-R. Next message appended below.*
 
 ---
+
+
+### msg-0003
+
+```
+ALVIANTECH_ENVELOPE v0.1
+
+PORTS:
+  msg_id: "msg-0003"
+  ts_utc: "2026-02-18T09:40:00Z"
+  from: HUMAN
+  to: MORPHEUS
+  mode: DESIGN
+  scope: NON_EXEC
+
+BODY:
+  goal: Freeze evaluation_policy enum to FIRST_FAIL.
+
+  inputs:
+    - msg-0002-R confirmed drift.
+    - FIRST_FAIL recommended as canonical enum value.
+
+  constraints:
+    must:
+      - evaluation_policy explicitly set to FIRST_FAIL in Section 2.5.
+      - No schema mutation beyond enum clarification.
+      - Append-only discipline maintained.
+    must_not:
+      - No renaming of existing schema fields.
+      - No redefinition of ACCUMULATE_ALL semantics.
+
+  output_spec:
+    type: NOTE
+    format: MARKDOWN
+
+  payload:
+    HUMAN approves FIRST_FAIL as canonical evaluation_policy for
+    TRINITY_CONFORMANCE_CHECK v0.1.
+
+RETURN:
+  in_reply_to: "msg-0003"
+  exit:
+  reason:
+    -
+  payload:
+
+```
+
+---
+
+*End of msg-0003. Next message appended below.*
+
+---
+
+### msg-0003-R
+
+```
+ALVIANTECH_ENVELOPE v0.1
+
+PORTS:
+  msg_id: "msg-0003-R"
+  ts_utc: "2026-02-18T09:45:00Z"
+  from: MORPHEUS
+  to: HUMAN
+  mode: DESIGN
+  scope: NON_EXEC
+
+BODY:
+  goal: Acknowledge HUMAN approval and freeze evaluation_policy =
+        FIRST_FAIL as binding for TRINITY_CONFORMANCE_CHECK v0.1.
+  inputs:
+    - msg-0003 grants HUMAN approval for FIRST_FAIL.
+    - msg-0002-R established the correction path.
+    - Section 2.5 originally declared "HUMAN-IN-THE-LOOP REVIEW"
+      (not a valid enum value).
+  constraints:
+    must:
+      - Record the freeze explicitly.
+      - Clarify what is and is not changed.
+      - Maintain append-only discipline.
+    must_not:
+      - No schema mutation.
+      - No redefinition of ACCUMULATE_ALL semantics.
+  output_spec:
+    type: NOTE
+    format: MARKDOWN
+  payload:
+    FREEZE RECORD:
+
+    evaluation_policy = FIRST_FAIL
+    Frozen at: 2026-02-18T09:45:00Z
+    Authority: HUMAN (msg-0003)
+    Effective: Immediately, for all TRINITY_CONFORMANCE_CHECK v0.1
+               evaluations.
+
+    WHAT THIS MEANS:
+    - TRINITY halts evaluation on the first constraint violation
+      encountered and surfaces it immediately.
+    - The violation is reported in the RETURN block with exit: FAIL
+      and the specific reason.
+    - Remaining constraints are NOT evaluated after the first failure.
+    - ACCUMULATE_ALL remains a defined enum value but is NOT selected.
+      Its semantics are unchanged and preserved for future use if
+      a versioned protocol amendment (R1+) re-selects it.
+
+    WHAT IS NOT CHANGED:
+    - Section 2.5 procedural text (human review workflow) remains
+      intact as operational guidance.
+    - The scope/exec approval mechanism is unaffected.
+    - No schema fields are renamed or removed.
+    - The original Section 2.5 text is not edited (append-only).
+
+    CORRECTION CHAIN:
+    msg-0002   -> HUMAN flagged drift
+    msg-0002-R -> MORPHEUS confirmed FIRST_FAIL, exit: PASS
+    msg-0003   -> HUMAN approved FIRST_FAIL
+    msg-0003-R -> MORPHEUS acknowledged freeze (this message)
+
+RETURN:
+  in_reply_to: "msg-0003"
+  exit: PASS
+  reason:
+    - HUMAN approval received for evaluation_policy = FIRST_FAIL.
+    - Freeze recorded with timestamp and authority chain.
+    - No schema mutation performed.
+    - Append-only discipline maintained.
+  payload:
+    evaluation_policy = FIRST_FAIL is now FROZEN.
+    Correction chain complete. No further action required.
+
+```
+
+---
+
+*End of msg-0003-R. Next message appended below.*
+
+---
