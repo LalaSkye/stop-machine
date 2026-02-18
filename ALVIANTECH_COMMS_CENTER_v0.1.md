@@ -468,3 +468,151 @@ RETURN:
 *End of msg-0003-R. Next message appended below.*
 
 ---
+
+
+### msg-0004
+
+```
+ALVIANTECH_ENVELOPE v0.1
+
+PORTS:
+  msg_id: "msg-0004"
+  ts_utc: "2026-02-18T10:00:00Z"
+  from: HUMAN
+  to: TRINITY
+  mode: TEST
+  scope: NON_EXEC
+
+BODY:
+  goal: Execute frozen FIRST_FAIL conformance test (format mismatch).
+
+  inputs:
+    - evaluation_policy = FIRST_FAIL (frozen in msg-0003).
+    - R0 structural pre-check active.
+
+  constraints:
+    must:
+      - Apply TRINITY_CONFORMANCE_CHECK v0.1.
+      - Use FIRST_FAIL evaluation order.
+    must_not:
+      - No schema mutation.
+      - No execution semantics.
+
+  output_spec:
+    type: NOTE
+    format: JSON
+
+  payload:
+    This payload is intentionally not JSON.
+
+RETURN:
+  in_reply_to: "msg-0004"
+  exit:
+  reason:
+    -
+  payload:
+
+```
+
+---
+
+*End of msg-0004. Next message appended below.*
+
+---
+
+### msg-0004-R
+
+```
+ALVIANTECH_ENVELOPE v0.1
+
+PORTS:
+  msg_id: "msg-0004-R"
+  ts_utc: "2026-02-18T10:05:00Z"
+  from: TRINITY
+  to: HUMAN
+  mode: TEST
+  scope: NON_EXEC
+
+BODY:
+  goal: TRINITY_CONFORMANCE_CHECK v0.1 result for msg-0004.
+  inputs:
+    - evaluation_policy = FIRST_FAIL (frozen msg-0003, authority HUMAN).
+    - R0 structural pre-check: ACTIVE.
+    - Envelope under test: msg-0004.
+  constraints:
+    must:
+      - Report first violation and halt.
+      - No further constraints evaluated after first failure.
+    must_not:
+      - No schema mutation.
+      - No execution semantics.
+  output_spec:
+    type: NOTE
+    format: MARKDOWN
+  payload:
+    TRINITY_CONFORMANCE_CHECK v0.1
+    ================================
+    evaluation_policy: FIRST_FAIL
+    envelope_under_test: msg-0004
+    timestamp: 2026-02-18T10:05:00Z
+
+    R0 STRUCTURAL PRE-CHECK:
+    -------------------------
+    [PASS] PORTS.msg_id present: "msg-0004"
+    [PASS] PORTS.ts_utc present: "2026-02-18T10:00:00Z"
+    [PASS] PORTS.from present: HUMAN
+    [PASS] PORTS.to present: TRINITY
+    [PASS] PORTS.mode present: TEST
+    [PASS] PORTS.scope present: NON_EXEC
+    [PASS] BODY.goal present
+    [PASS] BODY.inputs present (non-empty)
+    [PASS] BODY.constraints.must present (non-empty)
+    [PASS] BODY.constraints.must_not present (non-empty)
+    [PASS] BODY.output_spec.type present: NOTE
+    [PASS] BODY.output_spec.format present: JSON
+    [PASS] BODY.payload present (non-empty)
+    [PASS] RETURN block present
+    R0 pre-check result: PASS (14/14 fields valid)
+
+    CONSTRAINT EVALUATION (FIRST_FAIL):
+    ------------------------------------
+    Constraint 1: output_spec.format compliance
+      Expected: JSON (valid JSON object or array)
+      Actual:   "This payload is intentionally not JSON."
+      Parse attempt: FAILED (not valid JSON)
+      Result: >>> FAIL <<<
+
+    --- HALT: FIRST_FAIL triggered ---
+    Remaining constraints not evaluated.
+
+    SUMMARY:
+    ---------
+    R0 pre-check:  PASS
+    Constraints:   FAIL (1 of 1 evaluated)
+    First failure: output_spec.format mismatch
+                   (declared JSON, payload is plaintext)
+    Halted at:     Constraint 1
+    Unevaluated:   constraints.must[1] (FIRST_FAIL evaluation order),
+                   constraints.must_not[0], constraints.must_not[1]
+
+RETURN:
+  in_reply_to: "msg-0004"
+  exit: FAIL
+  reason:
+    - output_spec.format declares JSON but payload is not valid JSON.
+    - FIRST_FAIL policy: halted on first constraint violation.
+    - R0 structural pre-check passed (14/14).
+    - Remaining constraints were not evaluated per FIRST_FAIL.
+  payload:
+    CONFORMANCE: FAIL
+    VIOLATION: output_spec.format mismatch (JSON declared, plaintext
+    delivered).
+    FIRST_FAIL halt at constraint 1. Test behaved as expected.
+
+```
+
+---
+
+*End of msg-0004-R. Next message appended below.*
+
+---
