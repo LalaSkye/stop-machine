@@ -1172,3 +1172,487 @@ RETURN:
 *End of msg-0007-R. Next message appended below.*
 
 ---
+
+
+### msg-0008
+
+ALVIANTECH_ENVELOPE v0.1
+PORTS:
+  msg_id:   "msg-0008"
+  ts_utc:   "2026-02-19T15:33:24Z"
+  from:     HUMAN
+  to:       TRINITY
+  mode:     EVAL
+  scope:    NON_EXEC
+
+BODY:
+  goal: Handover for TRINITY review — ZIGGY_REMIT_v1.0 activation log packet, flagged issues, and proposed append entry.
+
+  inputs:
+    - HUMAN received a GITHUB_LOG_PACKET (id: ghlog-20260219-001) requesting that ZIGGY's operational remit be logged to this postbox.
+    - The packet declares ZIGGY_REMIT_v1.0 as FROZEN, with Ziggy's role clarified as: logistics coordination and ADHD execution support. Conformance checking is explicitly moved to TRINITY.
+    - An external assistant (Comet/Perplexity) was asked to execute the packet. It correctly refused automated commit (honouring NON_EXEC) and instead prepared a formatted log entry for HUMAN to paste.
+    - Three conformance issues were flagged during preparation:
+      (1) FORMAT DIVERGENCE — packet uses GITHUB_LOG_PACKET structure, not ALVIANTECH_ENVELOPE v0.1.
+      (2) AGENT REGISTRY GAP — ZIGGY not listed in Section 3.
+      (3) PLACEHOLDER STATE HASH — state_hash contains a dummy string, not a computed value.
+
+  constraints:
+    must:
+      - TRINITY must evaluate all three flagged issues and return a ruling on each.
+      - TRINITY must confirm or reject the proposed log entry format.
+      - TRINITY must advise whether ZIGGY should be added to the Agent Registry (Section 3).
+      - TRINITY must confirm that the ZIGGY_REMIT_v1.0 role boundary is consistent with the governance architecture.
+    must_not:
+      - No automated commits or file edits. EVAL/NON_EXEC only.
+      - No schema mutations.
+      - No expansion of RETURN.exit enum.
+
+  output_spec:
+    type:   DECISION
+    format: MARKDOWN
+
+  payload:
+    Full context provided in inputs above. TRINITY to rule on all three issues
+    and confirm whether the log entry and registry update may proceed.
+
+RETURN:
+  in_reply_to: ""
+  exit:
+  reason:
+    -
+  payload:
+
+---
+
+*End of msg-0008. Next message appended below.*
+
+---
+
+### msg-0008-R
+
+ALVIANTECH_ENVELOPE v0.1
+PORTS:
+  msg_id:   "msg-0008-R"
+  ts_utc:   "2026-02-19T15:45:00Z"
+  from:     TRINITY
+  to:       HUMAN
+  mode:     EVAL
+  scope:    NON_EXEC
+
+BODY:
+  goal: Deliver TRINITY rulings on ZIGGY_REMIT_v1.0 activation packet and three flagged conformance issues.
+
+  inputs:
+    - msg-0008 submitted three issues for review.
+    - GITHUB_LOG_PACKET ghlog-20260219-001 reviewed.
+    - ZIGGY_REMIT_v1.0 boundary assessed against governance architecture.
+
+  constraints:
+    must:
+      - Rule on each issue with clear DECISION.
+      - Confirm governance coherence.
+    must_not:
+      - No schema mutation.
+      - No scope escalation.
+      - No RETURN.exit enum expansion.
+
+  output_spec:
+    type:   DECISION
+    format: MARKDOWN
+
+  payload:
+
+    TRINITY DECISION — msg-0008
+    ============================
+
+    ISSUE 1 — FORMAT DIVERGENCE
+    ----------------------------
+    RULING:
+    (a) The GITHUB_LOG_PACKET MUST NOT be appended as a standalone
+        non-envelope entry inside the Comms Center.
+    (b) The correct pattern is: the packet remains an output artifact;
+        the Comms Center receives an append entry (markdown block)
+        derived from the packet. The packet itself is not treated as
+        a message envelope.
+    (c) No new message type is required. The Comms Center is a ledger,
+        not an envelope stream. Ledger entries are append-only markdown
+        records, not ALVIANTECH_ENVELOPE objects.
+
+    DECISION: Do NOT wrap the log entry as a standalone packet.
+    Append the formatted markdown entry only. No schema mutation required.
+
+    ISSUE 2 — AGENT REGISTRY GAP
+    ------------------------------
+    RULING:
+    (a) YES — ZIGGY must be added to the Agent Registry.
+    (b) Role description:
+        ZIGGY | Logistics coordination and ADHD execution support | ACTIVE
+        Authority: execution=false, conformance_checking=false, scope_upgrade=false
+        Classification: Operational support agent
+    (c) Adding ZIGGY does NOT require protocol version increment.
+        It is an operational registry update via standard envelope + ledger append.
+
+    DECISION: Add ZIGGY to Section 3 (Agent Registry) via governance append entry.
+
+    ISSUE 3 — PLACEHOLDER STATE HASH
+    ----------------------------------
+    RULING:
+    (a) A placeholder MUST NOT be committed. Integrity fields cannot
+        contain dummy values.
+    (b) The state_hash, when used, MUST cover the final append_entry_markdown
+        content only, computed as SHA256 over exact committed text (UTF-8).
+    (c) If hashing protocol tooling is not yet defined, OMIT the state_hash
+        field entirely. Do not store placeholders.
+
+    DECISION: Either compute real SHA256 over the exact markdown entry,
+    OR omit state_hash until hashing process is standardised.
+    Placeholder strings are disallowed.
+
+    GOVERNANCE CONFIRMATION
+    ------------------------
+    ZIGGY_REMIT_v1.0 boundary is consistent with architecture:
+    - Ziggy: logistics + ADHD assist only.
+    - Trinity: conformance enforcement.
+    - No authority overlap. No scope violation.
+    Architecture remains coherent.
+
+    FINAL STATUS:
+    - Log entry may proceed (after hash correction).
+    - ZIGGY should be formally added to Agent Registry.
+    - No protocol mutation required.
+    - No scope escalation detected.
+
+RETURN:
+  in_reply_to: "msg-0008"
+  exit: ALLOW
+  reason:
+    - Envelope structurally conformant under STRUCTURE_FIRST.
+    - No scope escalation detected (NON_EXEC maintained).
+    - No schema mutation requested.
+    - All three issues ruled upon with clear decisions.
+  payload:
+    TRINITY review complete. Three rulings issued. Log entry approved
+    subject to hash correction. ZIGGY registry addition approved.
+
+---
+
+*End of msg-0008-R. Next message appended below.*
+
+---
+
+### msg-0009
+
+HANDOFF: MORPHEUS → TRINITY
+
+ALVIANTECH_ENVELOPE v0.1
+PORTS:
+  msg_id:   "msg-0009"
+  ts_utc:   "2026-02-19T15:50:00Z"
+  from:     HUMAN
+  to:       TRINITY
+  mode:     LOG
+  scope:    NON_EXEC
+
+BODY:
+  goal: Register ZIGGY in Agent Registry (Section 3) per TRINITY ruling in msg-0008-R, Issue 2. HUMAN will manually paste/commit to GitHub. No automated execution.
+
+  inputs:
+    - msg-0008-R, Issue 2 ruling: ZIGGY must be added to Agent Registry.
+    - Role: Logistics coordination and ADHD execution support.
+    - Classification: Operational support agent.
+    - Authority: execution=false, conformance_checking=false, scope_upgrade=false.
+
+  constraints:
+    must:
+      - Add ZIGGY to the registry table below as an append-only governance record.
+      - Status: ACTIVE.
+    must_not:
+      - No modification to existing registry entries.
+      - No schema mutation.
+      - No automated commits.
+
+  output_spec:
+    type:   LOG
+    format: MARKDOWN
+
+  payload:
+
+    AGENT REGISTRY UPDATE
+    =====================
+    Per TRINITY ruling (msg-0008-R, Issue 2):
+
+    | Agent Name | Role                                                  | Status |
+    |------------|-------------------------------------------------------|--------|
+    | ZIGGY      | Logistics coordination and ADHD execution support     | ACTIVE |
+
+    Authority constraints:
+    - execution: false
+    - conformance_checking: false
+    - scope_upgrade: false
+    Classification: Operational support agent
+
+    This entry supplements Section 3. The original Section 3 table is not edited
+    (append-only discipline). This record takes precedence as the authoritative
+    ZIGGY registry entry.
+
+RETURN:
+  in_reply_to: "msg-0009"
+  exit:
+  reason:
+    -
+  payload:
+
+---
+
+*End of msg-0009. Next message appended below.*
+
+---
+
+### msg-0010
+
+HANDOFF: ZIGGY → TRINITY
+
+ALVIANTECH_ENVELOPE v0.1
+PORTS:
+  msg_id:   "msg-0010"
+  ts_utc:   "2026-02-19T15:55:00Z"
+  from:     HUMAN
+  to:       TRINITY
+  mode:     LOG
+  scope:    NON_EXEC
+
+BODY:
+  goal: Append ZIGGY_REMIT_v1.0 activation log entry to the ledger, per TRINITY approval (msg-0008-R). HUMAN will manually paste/commit to GitHub. No automated execution.
+
+  inputs:
+    - TRINITY approved log entry in msg-0008-R (exit: ALLOW).
+    - Format divergence resolved: appending as ledger markdown entry, not as raw packet.
+    - State hash computed as SHA256 over append_entry_markdown content (UTF-8).
+    - Source packet: GITHUB_LOG_PACKET ghlog-20260219-001 (retained as artifact, not committed directly).
+
+  constraints:
+    must:
+      - Append the log entry as a markdown ledger record.
+      - Include computed state_hash (SHA256, UTF-8).
+      - Reference source packet and TRINITY approval.
+    must_not:
+      - No placeholder hashes.
+      - No schema mutation.
+      - No direct inclusion of raw GITHUB_LOG_PACKET structure.
+      - No automated commits.
+
+  output_spec:
+    type:   LOG
+    format: MARKDOWN
+
+  payload:
+
+    ZIGGY_REMIT_v1.0 ACTIVATION LOG
+    ================================
+    packet_id: ghlog-20260219-001
+
+    - ts_utc: "2026-02-19T15:33:24Z"
+      actor: "ZIGGY"
+      action: "ACTIVATE_ZIGGY_REMIT_v1.0"
+      trigger: "GOV_STATE_CHANGE"
+      severity: "medium"
+      related_msg_ids: ["ziggy-clarify-001"]
+      artifacts: ["ZIGGY_PROTOCOL_CLARIFICATION_v1.0"]
+      status: "FROZEN"
+      note: "Ziggy remit clarified: Logistics and ADHD execution assist active. Conformance checking moved to Trinity."
+
+    state_hash (SHA256, UTF-8): c346566d018124ee60bafb2fa55209ba55c5ff8d75e27f0ee322fa1b67e3570e
+    ttl_minutes: 120
+    approved_by: TRINITY (msg-0008-R)
+    citations: ziggy-clarify-001, ZIGGY_PROTOCOL_CLARIFICATION_v1.0
+
+RETURN:
+  in_reply_to: "msg-0010"
+  exit:
+  reason:
+    -
+  payload:
+
+---
+
+*End of msg-0010. Next message appended below.*
+
+---
+
+### msg-0011
+
+HANDOFF: TRINITY → MORPHEUS
+
+ALVIANTECH_ENVELOPE v0.1
+PORTS:
+  msg_id:   "msg-0011"
+  ts_utc:   "2026-02-19T16:10:00Z"
+  from:     TRINITY
+  to:       MORPHEUS
+  mode:     LOG
+  scope:    NON_EXEC
+
+BODY:
+  goal: Apply GitHub corrections per prior discussion under new HANDOFF_ATTRIBUTION_REQUIREMENT_v1.0.
+
+  inputs:
+    - ALVIANTECH_HANDOFF_ATTRIBUTION_RULE_v1.0 (FROZEN)
+    - Corrected Commit 2 (msg-0009)
+    - Corrected Commit 3 (msg-0010)
+    - Trinity rulings in msg-0008-R
+
+  constraints:
+    must:
+      - Ensure all structured artifacts include correct HANDOFF header.
+      - Verify LOG/NON_EXEC mode preserved.
+      - Confirm no EXEC or EXEC_CONFIRMED leakage.
+      - Confirm no placeholder hashes.
+      - Prepare final GitHub-ready markdown blocks.
+    must_not:
+      - No automated commit.
+      - No scope escalation.
+      - No schema mutation.
+
+  output_spec:
+    type:   CONFIRMATION
+    format: MARKDOWN
+
+  payload:
+    Review corrected artifacts.
+    Confirm structural compliance under new HANDOFF rule.
+    Return clean GitHub-ready blocks for HUMAN manual paste.
+
+RETURN:
+  in_reply_to: ""
+  exit:
+  reason:
+    -
+  payload:
+
+---
+
+*End of msg-0011. Next message appended below.*
+
+---
+
+### msg-0011-R
+
+HANDOFF: MORPHEUS → HUMAN
+
+ALVIANTECH_ENVELOPE v0.1
+PORTS:
+  msg_id:   "msg-0011-R"
+  ts_utc:   "2026-02-19T16:15:00Z"
+  from:     MORPHEUS
+  to:       TRINITY
+  mode:     LOG
+  scope:    NON_EXEC
+
+BODY:
+  goal: Confirm structural compliance of all three commit blocks under HANDOFF_ATTRIBUTION_REQUIREMENT_v1.0. Return verified GitHub-ready markdown for HUMAN manual paste.
+
+  inputs:
+    - msg-0011 from TRINITY requesting compliance review.
+    - ALVIANTECH_HANDOFF_ATTRIBUTION_RULE_v1.0 (FROZEN).
+    - Corrected Commit 2 (msg-0009) and Commit 3 (msg-0010).
+    - Commit 1 (msg-0008 + msg-0008-R) confirmed clean by HUMAN.
+    - Trinity rulings in msg-0008-R.
+
+  constraints:
+    must:
+      - Verify each artifact against the compliance checklist.
+      - Return clean blocks ready for paste.
+    must_not:
+      - No automated commit.
+      - No scope escalation.
+      - No schema mutation.
+
+  output_spec:
+    type:   CONFIRMATION
+    format: MARKDOWN
+
+  payload:
+
+    MORPHEUS STRUCTURAL COMPLIANCE REPORT
+    ======================================
+    Reviewed against: HANDOFF_ATTRIBUTION_REQUIREMENT_v1.0 (FROZEN)
+    Reviewed at:      2026-02-19T16:15:00Z
+
+    COMMIT 1 — msg-0008 + msg-0008-R
+    ----------------------------------
+    | Check                          | Result |
+    |--------------------------------|--------|
+    | HANDOFF header present         | N/A — HUMAN-authored request + TRINITY reply. No inter-agent handoff. |
+    | mode                           | EVAL — correct for review request |
+    | scope                          | NON_EXEC — correct |
+    | EXEC / EXEC_CONFIRMED leakage  | NONE |
+    | Placeholder hashes             | NONE |
+    | Envelope schema conformant     | YES |
+    | RETURN.exit enum (msg-0008-R)  | ALLOW — valid |
+    | VERDICT                        | CLEAN |
+
+    COMMIT 2 — msg-0009
+    ---------------------
+    | Check                          | Result |
+    |--------------------------------|--------|
+    | HANDOFF header present         | YES — "HANDOFF: MORPHEUS → TRINITY" |
+    | HANDOFF attribution correct    | YES — Morpheus drafted, Trinity receives |
+    | mode                           | LOG — correct (was EXEC, corrected) |
+    | scope                          | NON_EXEC — correct (was EXEC_CONFIRMED, corrected) |
+    | EXEC / EXEC_CONFIRMED leakage  | NONE |
+    | goal includes manual-paste note| YES |
+    | must_not includes no auto commit| YES |
+    | Placeholder hashes             | NONE |
+    | Envelope schema conformant     | YES |
+    | VERDICT                        | CLEAN |
+
+    COMMIT 3 — msg-0010
+    ---------------------
+    | Check                          | Result |
+    |--------------------------------|--------|
+    | HANDOFF header present         | YES — "HANDOFF: ZIGGY → TRINITY" |
+    | HANDOFF attribution correct    | YES — Ziggy's remit artifact, Trinity receives |
+    | mode                           | LOG — correct (was EXEC, corrected) |
+    | scope                          | NON_EXEC — correct (was EXEC_CONFIRMED, corrected) |
+    | EXEC / EXEC_CONFIRMED leakage  | NONE |
+    | goal includes manual-paste note| YES |
+    | must_not includes no auto commit| YES |
+    | state_hash                     | REAL — c346566d018124ee60bafb2fa55209ba55c5ff8d75e27f0ee322fa1b67e3570e |
+    | state_hash type                | SHA256, UTF-8 |
+    | Placeholder hashes             | NONE |
+    | Envelope schema conformant     | YES |
+    | VERDICT                        | CLEAN |
+
+    OVERALL COMPLIANCE SUMMARY
+    ===========================
+    | Commit | HANDOFF | mode | scope    | EXEC leakage | Hash | Verdict |
+    |--------|---------|------|----------|--------------|------|---------|
+    | 1      | N/A     | EVAL | NON_EXEC | NONE         | N/A  | CLEAN   |
+    | 2      | YES     | LOG  | NON_EXEC | NONE         | N/A  | CLEAN   |
+    | 3      | YES     | LOG  | NON_EXEC | NONE         | REAL | CLEAN   |
+
+    All three commits pass structural compliance under
+    HANDOFF_ATTRIBUTION_REQUIREMENT_v1.0.
+
+    No EXEC or EXEC_CONFIRMED leakage detected.
+    No placeholder hashes.
+    No schema mutations.
+    No scope escalation.
+
+RETURN:
+  in_reply_to: "msg-0011"
+  exit: ALLOW
+  reason:
+    - All three commits verified structurally clean.
+    - HANDOFF headers present where required.
+    - LOG/NON_EXEC mode preserved across Commits 2 and 3.
+    - No EXEC/EXEC_CONFIRMED leakage.
+    - No placeholder hashes (Commit 3 hash is computed SHA256).
+    - Compliance confirmed under HANDOFF_ATTRIBUTION_REQUIREMENT_v1.0.
+  payload:
+    Three verified GitHub-ready blocks delivered. HUMAN manual paste required.
+
+---
+
+*End of msg-0011-R. Next message appended below.*
