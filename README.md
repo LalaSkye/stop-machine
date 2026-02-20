@@ -1,3 +1,5 @@
+![CI](https://github.com/LalaSkye/stop-machine/actions/workflows/ci.yml/badge.svg)
+
 # stop-machine
 
 A deterministic three-state stop controller.
