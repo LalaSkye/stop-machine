@@ -134,10 +134,8 @@ def test_reset_from_amber():
 
 def test_reset_from_red():
     m = StopMachine(State.RED)
-    result = m.reset()
-    assert result == State.GREEN
-    assert m.state == State.GREEN
-    assert not m.is_terminal
+    with pytest.raises(TerminalStateError):
+        m.reset()
 
 
 def test_reset_then_advance():
@@ -145,10 +143,8 @@ def test_reset_then_advance():
     m.advance()
     m.advance()
     assert m.is_terminal
-    m.reset()
-    assert m.state == State.GREEN
-    m.advance()
-    assert m.state == State.AMBER
+    with pytest.raises(TerminalStateError):
+        m.reset()
 
 
 # --- repr ---
