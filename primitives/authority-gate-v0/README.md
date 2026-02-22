@@ -1,37 +1,8 @@
-# AuthorityGate
+NON-CANONICAL LEGACY (V0). Canonical: [constraint-workshop](https://github.com/LalaSkye/constraint-workshop) @ `70ed2c9`.
 
-A tiny, deterministic wrapper that makes **execution require explicit authority**.
+This folder contains a **non-functional stub** that raises `RuntimeError` on import.
+The canonical `AuthorityGate` implementation lives in
+[constraint-workshop/authority_gate.py](https://github.com/LalaSkye/constraint-workshop/blob/main/authority_gate.py).
 
-## Invariants (all tested)
-
-| Invariant | Meaning | Tested |
-|---|---|:--:|
-| Determinism | Same inputs => same allow/deny + same history | Yes |
-| Monotonicity | Higher authority never loses permissions | Yes |
-| Auditability | Every call records {required, provided, allowed} | Yes |
-
-## Authority levels
-
-Ordered (weak to strong):
-
-- `NONE`
-- `USER_CONFIRMED`
-- `OWNER_CONFIRMED`
-- `ADMIN_APPROVED`
-
-## Why this matters
-
-Most "governance" documents talk about approval, but runtime systems still execute on vibes.
-This primitive forces the missing mechanical step: **no explicit authority, no execution**.
-
-## Quickstart
-
-```bash
-python -m pytest primitives/authority-gate -v
-```
-
-## Scope
-
-- No policy engine.
-- No orchestration logic.
-- No opinions.
+Do not modify this folder. Update the canonical source instead.
+See [CANONICAL.md](../../CANONICAL.md) for details.
