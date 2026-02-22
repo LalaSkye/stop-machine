@@ -1,3 +1,7 @@
+# CANONICAL SOURCE: LalaSkye/constraint-workshop/stop_machine.py
+# PINNED COMMIT: 8d04cbc1e8e6576641962d5d3c866b0517ad596e
+# Semantics aligned to canonical: RED is terminal, reset() blocked from RED.
+
 """A deterministic three-state stop controller.
 
 States: GREEN -> AMBER -> RED
@@ -87,10 +91,11 @@ class StopMachine:
         return self._state
 
     def reset(self) -> State:
-        """Reset the machine to GREEN.
-
-        Returns the new state (always GREEN).
-        """
+        """Reset the machine to GREEN. Forbidden once RED is reached."""
+        if self.is_terminal:
+            raise TerminalStateError(
+                f"Cannot reset: {self._state.value} is terminal."
+            )
         self._state = State.GREEN
         return self._state
 

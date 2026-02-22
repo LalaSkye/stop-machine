@@ -24,5 +24,7 @@ jobs:
       - name: Install dependencies
         run: pip install pytest
 
-      - name: Run tests
+      - name: Run primitive tests
         run: python -m pytest primitives -v
+      - name: Run root tests
+        run: python -m pytest test_stop_machine.py -v
