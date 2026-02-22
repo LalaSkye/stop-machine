@@ -1,51 +1,14 @@
-# primitives/authority-gate/test_gate.py
-
+"""Stub test: confirms the v0 authority_gate raises RuntimeError on import."""
 import pytest
-from gate import Authority, AuthorityGate
-
-ALL = list(Authority)
-
-
-def add(a, b):
-    return a + b
+import importlib.util
+import sys
+from pathlib import Path
 
 
-def test_determinism_replay_history_and_result():
-    g1 = AuthorityGate(required=Authority.OWNER_CONFIRMED)
-    g2 = AuthorityGate(required=Authority.OWNER_CONFIRMED)
-    seq = [Authority.NONE, Authority.USER_CONFIRMED, Authority.OWNER_CONFIRMED, Authority.ADMIN_APPROVED]
-    out1, out2 = [], []
-    for a in seq:
-        try:
-            out1.append(g1.call(add, 1, 2, authority=a))
-        except PermissionError:
-            out1.append("DENY")
-        try:
-            out2.append(g2.call(add, 1, 2, authority=a))
-        except PermissionError:
-            out2.append("DENY")
-    assert out1 == out2
-    assert g1.history == g2.history
-
-
-@pytest.mark.parametrize("required", ALL)
-@pytest.mark.parametrize("provided", ALL)
-def test_monotonicity_authority_required_is_threshold(required, provided):
-    g = AuthorityGate(required=required)
-    ok = provided >= required
-    assert g.is_satisfied(provided) is ok
-    if ok:
-        assert g.call(add, 2, 3, authority=provided) == 5
-    else:
-        with pytest.raises(PermissionError):
-            g.call(add, 2, 3, authority=provided)
-
-
-def test_history_records_decisions_in_order():
-    g = AuthorityGate(required=Authority.USER_CONFIRMED)
-    with pytest.raises(PermissionError):
-        g.call(add, 1, 1, authority=Authority.NONE)
-    assert g.call(add, 1, 1, authority=Authority.USER_CONFIRMED) == 2
-    assert len(g.history) == 2
-    assert g.history[0].allowed is False
-    assert g.history[1].allowed is True
+def test_import_authority_gate_v0_raises():
+    """Importing the v0 stub must raise RuntimeError."""
+    stub = Path(__file__).resolve().parent / "gate.py"
+    spec = importlib.util.spec_from_file_location("gate_v0_stub", stub)
+    mod = importlib.util.module_from_spec(spec)
+    with pytest.raises(RuntimeError, match="non-canonical legacy stub"):
+        spec.loader.exec_module(mod)
