@@ -25,4 +25,4 @@ jobs:
         run: pip install pytest
 
       - name: Run tests
-        run: python -m pytest primitives -v
+        run: python -m pytest . -v
