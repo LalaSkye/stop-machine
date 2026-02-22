@@ -1,29 +1,35 @@
 name: CI
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-
       - name: Install dependencies
         run: pip install pytest
-
+      - name: Drift alarm - no StopMachine class in primitives
+        run: |
+          if grep -rn "class StopMachine" primitives/; then
+            echo "DRIFT DETECTED: StopMachine class found in primitives/"
+            exit 1
+          fi
+      - name: Drift alarm - no Gate implementation in primitives
+        run: |
+          if grep -rn "class.*Gate" primitives/authority-gate-v0/ primitives/stop-machine-v0/; then
+            echo "DRIFT DETECTED: Gate class found in v0 folders"
+            exit 1
+          fi
       - name: Run primitive tests
         run: python -m pytest primitives -v
       - name: Run root tests
