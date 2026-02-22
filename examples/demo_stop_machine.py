@@ -2,7 +2,7 @@
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "primitives" / "stop-machine"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "primitives" / "stop-machine-v0"))
 
 from stop_machine import Event, StopMachine  # noqa: E402
 
