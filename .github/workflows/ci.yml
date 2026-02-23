@@ -4,6 +4,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -30,7 +31,100 @@ jobs:
             echo "DRIFT DETECTED: Gate class found in v0 folders"
             exit 1
           fi
+      - name: Drift alarm - no runtime imports from analysis/docs/artifacts/examples
+        run: |
+          echo "Checking runtime roots for forbidden imports..."
+          FOUND=0
+          for token in "import analysis" "from analysis" "import docs" "from docs" "import artifacts" "from artifacts" "import examples" "from examples"; do
+            if grep -rn "$token" stop_machine.py primitives/ --include="*.py" 2>/dev/null; then
+              echo "DRIFT DETECTED: forbidden token '$token' found in runtime code"
+              FOUND=1
+            fi
+          done
+          if [ "$FOUND" -eq 1 ]; then
+            exit 1
+          fi
+          echo "OK: no forbidden imports found."
       - name: Run primitive tests
         run: python -m pytest primitives -v
       - name: Run root tests
         run: python -m pytest test_stop_machine.py -v
+
+  geometry-analysis:
+    needs: [test]
+    if: always()
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate geometry JSONL artefacts
+        shell: bash
+        run: |
+          cat > /tmp/validate_geometry.py << 'PYEOF'
+          import json, glob, sys
+
+          files = sorted(glob.glob("artifacts/geometry/**/*.jsonl", recursive=True))
+          if not files:
+              print("No geometry artefacts found. Skipping validation.")
+              sys.exit(0)
+
+          REQUIRED_KEYS = {"schema_version", "primitive", "event", "exit", "violations", "input_hash", "result_hash"}
+          VALID_EXITS = {"ALLOW", "HOLD", "DENY", "SILENCE"}
+
+          file_count = len(files)
+          line_count = 0
+          parse_fail = 0
+          exits = {}
+
+          for path in files:
+              with open(path, "r", encoding="utf-8") as fh:
+                  for lineno, raw in enumerate(fh, 1):
+                      raw = raw.strip()
+                      if not raw:
+                          continue
+                      line_count += 1
+                      try:
+                          obj = json.loads(raw)
+                      except json.JSONDecodeError as e:
+                          print(f"PARSE FAIL: {path}:{lineno}: {e}")
+                          parse_fail += 1
+                          continue
+                      missing = REQUIRED_KEYS - set(obj.keys())
+                      if missing:
+                          print(f"MISSING KEYS: {path}:{lineno}: {missing}")
+                          parse_fail += 1
+                          continue
+                      if obj.get("schema_version") != "0.1":
+                          print(f"BAD SCHEMA: {path}:{lineno}: {obj.get('schema_version')}")
+                          parse_fail += 1
+                      ex = obj.get("exit", "")
+                      if ex not in VALID_EXITS:
+                          print(f"BAD EXIT: {path}:{lineno}: {ex}")
+                          parse_fail += 1
+                      exits[ex] = exits.get(ex, 0) + 1
+
+          print("")
+          print("=== Geometry JSONL Summary ===")
+          print(f"Files:       {file_count}")
+          print(f"Lines:       {line_count}")
+          print(f"Parse fails: {parse_fail}")
+          for ex in sorted(exits):
+              print(f"  {ex}: {exits[ex]}")
+
+          if parse_fail:
+              print(f"WARNING: {parse_fail} validation issue(s) found.")
+              sys.exit(1)
+          print("All lines valid.")
+          PYEOF
+          python3 /tmp/validate_geometry.py
+      - name: Upload geometry artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: geometry-artifacts-${{ github.run_id }}
+          path: artifacts/geometry/**
+          if-no-files-found: warn
