@@ -2,7 +2,7 @@
 
 > **Repo:** LalaSkye/stop-machine
 > **Commit pin:** dddc878
-> **Status:** DRAFT
+> **Status:** FROZEN
 > **Scope:** Analysis-only instrumentation (no runtime semantic change)
 > **MCCS dependency:** None
 
