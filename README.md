@@ -1,4 +1,5 @@
 ![CI](https://github.com/LalaSkye/stop-machine/actions/workflows/ci.yml/badge.svg)
+![Geometry Layer v0](https://img.shields.io/badge/Geometry_Layer-v0_FROZEN-blue)
 
 # stop-machine
 
