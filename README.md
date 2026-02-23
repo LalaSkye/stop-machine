@@ -57,6 +57,11 @@ pytest test_stop_machine.py -v
 - All transitions explicit
 - RED is terminal
 
+## Docs
+
+- [Geometry Export Spec v0.1](docs/geometry_export_spec_v0.1.md) — log schema, artefact paths, and determinism rules for Geometry Layer v0 (experimental, analysis-only)
+
+
 ## License
 
 MIT
