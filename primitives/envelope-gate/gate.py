@@ -6,10 +6,10 @@ Supports two evaluation policies:
     - ACCUMULATE_ALL: collect all violations (available for diagnostics).
 
     Decision mapping:
-        - No violations      -> ALLOW
-        - Structural violation  -> DENY
-        - Policy violation     -> HOLD
-        - Not addressed to gate -> SILENCE
+    - No violations      -> ALLOW
+    - Structural violation  -> DENY
+    - Policy violation     -> HOLD
+    - Not addressed to gate -> SILENCE
 
 Deterministic. No side effects. No network calls.
 """
