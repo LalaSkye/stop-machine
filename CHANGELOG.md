@@ -4,6 +4,27 @@ All notable changes to **stop-machine** will be documented in this file.
 
 ---
 
+## [meta-hardening] — 2026-02-24
+
+### Added
+- **SECURITY.md**: Security policy documenting threat model, invariants, and reporting
+- **docs/runtime-trace.md**: Gate decision flow documentation (incl. SILENCE rephrase)
+- **docs/architecture-diagram.md**: Component map and data flow diagram
+- **tests/__init__.py**: Test package marker
+- **tests/test_invariant_enforcement.py**: Cross-cutting invariant enforcement tests
+  - EXIT_ENUM invariants (exact members, VALID_EXIT_VALUES consistency, _classify_exit)
+  - StopMachine terminal invariant (GREEN->AMBER->RED, advance/transition_to/reset from RED)
+  - Gate boundary invariants (valid->ALLOW, invalid->DENY, legacy PASS->HOLD)
+
+### Changed
+- `.github/workflows/ci.yml` — added `python -m pytest tests/ -v` step
+- `CHANGELOG.md` — this entry
+
+### Notes
+- **No runtime semantic change**. Only docs/tests/security policy/CI wiring.
+- No edits to `stop_machine.py`, `gate.py`, `rules.py`, `envelope_parser.py`, or `primitives/*`
+
+
 ## [geometry-layer-v0] — 2026-02-23
 
 ### Added
