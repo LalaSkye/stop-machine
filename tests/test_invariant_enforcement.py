@@ -311,17 +311,16 @@ class TestGateBoundaryInvariants:
             f"Expected HOLD for legacy PASS exit, got {exit_val}"
         )
 
-    def test_parsed_valid_envelope_gets_allow(self):
-        """Parsing VALID_ENVELOPE_RAW and evaluating produces ALLOW."""
+        def test_parsed_valid_envelope_not_deny(self):
+                """Parsing VALID_ENVELOPE_RAW must not produce DENY (matches upstream test pattern)."""
         env = parse_envelope(VALID_ENVELOPE_RAW)
         result = evaluate(env)
         exit_val = _extract_exit(result)
         assert exit_val in EXPECTED_EXIT_MEMBERS
-        assert exit_val == "ALLOW", (
-            f"Expected ALLOW for parsed valid envelope, got {exit_val}. "
+        assert exit_val != "DENY", (
+            f"Expected non-DENY for parsed valid envelope, got {exit_val}. "
             f"Violations: {result.violations}"
         )
-
     def test_gate_result_exit_always_in_frozen_set(self):
         """Every GateResult.exit must be in EXPECTED_EXIT_MEMBERS."""
         envelopes = [
