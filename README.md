@@ -39,8 +39,12 @@ m.transition_to(State.GREEN)   # raises InvalidTransitionError
 ## Reset
 
 ```python
+m = StopMachine()
+m.advance()                        # -> AMBER
+m.reset()                          # -> GREEN
+
 m = StopMachine(State.RED)
-m.reset()                      # -> GREEN
+m.reset()                          # raises TerminalStateError
 ```
 
 ## Run tests
