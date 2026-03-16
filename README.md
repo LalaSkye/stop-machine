@@ -1,5 +1,3 @@
-<!-- RECOMMENDATION: Remove ALVIANTECH_COMMS_CENTER_v0.1.md from repo root — it is a 49KB internal artefact that does not belong in a published library repository. -->
-
 [![CI](https://github.com/LalaSkye/stop-machine/actions/workflows/ci.yml/badge.svg)](https://github.com/LalaSkye/stop-machine/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
