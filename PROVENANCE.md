@@ -30,3 +30,7 @@ TrinityOS, AlvianTech, Execution Boundary Series, constraint-workshop
 © Ricky Dean Jones. All rights reserved except as granted by the repository licence.
 
 All architecture, methods, and system designs in this repository are the original work of Ricky Dean Jones unless otherwise stated. No rights to use, reproduce, or implement are granted without explicit permission beyond the terms of the repository licence.
+
+## Non-claims
+
+This repository does not claim ownership of general concepts such as pre-execution validation, authorization checks, or standard security patterns.
