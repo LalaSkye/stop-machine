@@ -7,6 +7,16 @@
 
 # stop-machine
 
+## Try in 30 seconds
+
+```bash
+git clone https://github.com/LalaSkye/stop-machine.git
+cd stop-machine
+python -m examples.basic_stop
+```
+
+**Expected output:** Machine refuses the unsafe action and logs a receipt.
+
 **A deterministic three-state stop controller. Once RED, nothing runs.**
 
 ## Why This Exists
