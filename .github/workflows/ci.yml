@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: pip install pytest
+        run: pip install pytest jsonschema
       - name: Drift alarm - no StopMachine class in primitives
         run: |
           if grep -rn "class StopMachine" primitives/; then
@@ -51,6 +51,56 @@ jobs:
         run: python -m pytest test_stop_machine.py -v
       - name: Run invariant tests
         run: python -m pytest tests/ -v
+      - name: Run adversarial surface gate fixture harness
+        run: python -m pytest test_adversarial_surface_fixtures.py -v
+      - name: Run surface-to-spine integration tests
+        run: python -m pytest test_surface_to_spine_integration.py -v
+      - name: Validate fixture schema
+        run: |
+          cat > /tmp/validate_fixtures.py << 'PYEOF'
+          import json, glob, sys
+          try:
+              import jsonschema
+          except ImportError:
+              print("jsonschema not installed — skipping schema validation")
+              sys.exit(0)
+
+          schema_path = "schemas/adversarial_surface_fixture.schema.json"
+          fixture_glob = "tests/fixtures/adversarial_surface_gate/*.json"
+
+          with open(schema_path) as f:
+              schema = json.load(f)
+
+          files = sorted(glob.glob(fixture_glob))
+          if not files:
+              print("No fixtures found — nothing to validate")
+              sys.exit(0)
+
+          failures = []
+          for path in files:
+              with open(path) as f:
+                  fixture = json.load(f)
+              try:
+                  jsonschema.validate(instance=fixture, schema=schema)
+              except jsonschema.ValidationError as e:
+                  print(f"SCHEMA FAIL: {path}: {e.message}")
+                  failures.append(path)
+
+          if failures:
+              print(f"{len(failures)} fixture(s) failed schema validation")
+              sys.exit(1)
+          print(f"All {len(files)} fixture(s) valid against schema.")
+          PYEOF
+          python3 /tmp/validate_fixtures.py
+      - name: Generate verification receipt
+        run: python scripts/verify_adversarial_surface_gate.py
+      - name: Upload verification receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surface-gate-receipt-${{ matrix.python-version }}-${{ github.run_id }}
+          path: tests/adversarial/latest_surface_gate_verification_receipt.json
+          if-no-files-found: warn
 
   geometry-analysis:
     needs: [test]

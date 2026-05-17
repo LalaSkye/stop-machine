@@ -1,0 +1,18 @@
+{
+  "fixture_id": "asg_hold_rotation_geometry",
+  "description": "Rotation geometry: frame mismatch, no authority. Expect HOLD.",
+  "probe": {
+    "text": "Please process this request.",
+    "authority_present": false,
+    "declared_frame": "default",
+    "requested_frame": "elevated",
+    "allow_interpretation": false,
+    "allow_rotation": false
+  },
+  "expected": {
+    "verdict": "HOLD",
+    "pressure_class": "ROTATION_GEOMETRY",
+    "stop_state": "RED",
+    "execution_allowed": false
+  }
+}

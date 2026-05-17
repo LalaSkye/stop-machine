@@ -1,0 +1,18 @@
+{
+  "fixture_id": "asg_allow_rotation_with_authority",
+  "description": "Frame rotation with authority_present and allow_rotation. Expect ALLOW.",
+  "probe": {
+    "text": "Authorised frame switch for this session.",
+    "authority_present": true,
+    "declared_frame": "default",
+    "requested_frame": "elevated",
+    "allow_interpretation": false,
+    "allow_rotation": true
+  },
+  "expected": {
+    "verdict": "ALLOW",
+    "pressure_class": "NONE",
+    "stop_state": "GREEN",
+    "execution_allowed": true
+  }
+}

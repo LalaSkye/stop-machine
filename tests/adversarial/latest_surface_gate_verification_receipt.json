@@ -1,0 +1,18 @@
+{
+  "schema_version": "0.2",
+  "generator": "scripts/verify_adversarial_surface_gate.py",
+  "generated_at": "PENDING — run scripts/verify_adversarial_surface_gate.py to populate",
+  "fixture_dir": "tests/fixtures/adversarial_surface_gate",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "corpus_hash": "PENDING",
+  "claim_boundary": {
+    "does_not_claim_prompt_injection_immunity": true,
+    "does_not_claim_semantic_completeness": true,
+    "does_not_claim_production_readiness": true,
+    "does_not_claim_universal_adversarial_coverage": true,
+    "allowed_claim": "On the demonstrated path, adversarial input surfaces are refused or held before execution, and the fixture corpus can be replayed into a verification receipt."
+  },
+  "results": []
+}
