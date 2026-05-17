@@ -185,7 +185,6 @@ No rights to use, reproduce, or implement are granted without explicit permissio
 
 This repository demonstrates deterministic control using standard engineering techniques. No proprietary frameworks or external implementations are used.
 
-
 ---
 
 ## Admissibility Proof Spine v0.1
@@ -208,7 +207,7 @@ python -m examples.admissibility_proof_spine_demo
 
 ### Expected result
 
-```
+```text
 verdict       = HOLD
 stop_state    = RED
 consequence_bound = false
@@ -226,3 +225,54 @@ pytest test_stop_machine.py test_admissibility_proof_spine.py -v
 This proves only that clean evidence cannot upgrade an inadmissible transition on the demonstrated path.
 
 It does not claim production readiness, compliance, universal coverage, side-effect enforcement, or field adoption.
+
+---
+
+## Adversarial Surface Gate v0.1
+
+A deterministic pre-admissibility gate for adversarial or unstable input surfaces.
+
+It demonstrates that four surface pressures fail closed before execution on the demonstrated path:
+
+- negation override
+- interpretation drift
+- paradox injection
+- unauthorised frame rotation / geometry rotation
+
+Files:
+
+- `adversarial_surface_gate.py`
+- `test_adversarial_surface_gate.py`
+- `examples/adversarial_surface_gate_demo.py`
+- `docs/ADVERSARIAL_SURFACE_GATE_PROOF_PACK_v0.1.md`
+- `tests/fixtures/adversarial_surface_gate/*.json`
+
+### Run
+
+```bash
+python -m examples.adversarial_surface_gate_demo
+```
+
+### Expected result
+
+```text
+clean_input           -> ALLOW / GREEN / execution_allowed true
+negation_override     -> DENY  / RED   / execution_allowed false
+interpretation_drift  -> HOLD  / RED   / execution_allowed false
+paradox_injection     -> DENY  / RED   / execution_allowed false
+rotation_geometry     -> HOLD  / RED   / execution_allowed false
+mixed_pressure        -> DENY  / RED   / execution_allowed false
+```
+
+### Tests
+
+```bash
+pytest test_adversarial_surface_gate.py -v
+pytest test_stop_machine.py test_admissibility_proof_spine.py test_adversarial_surface_gate.py -v
+```
+
+### Claim boundary
+
+This proves only that, on the demonstrated path, negation override, interpretation drift, paradox injection, and unauthorised frame rotation are refused or held before execution.
+
+It does not prove prompt-injection immunity, semantic completeness, production readiness, universal adversarial coverage, legal sufficiency, compliance, or safety of all agentic systems.
