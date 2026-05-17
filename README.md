@@ -185,3 +185,44 @@ No rights to use, reproduce, or implement are granted without explicit permissio
 
 This repository demonstrates deterministic control using standard engineering techniques. No proprietary frameworks or external implementations are used.
 
+
+---
+
+## Admissibility Proof Spine v0.1
+
+A narrow, bounded demonstration that a complete evidence record cannot upgrade an inadmissible transition into an admissible one on the demonstrated path.
+
+Files:
+
+- `admissibility_proof_spine.py`
+- `examples/admissibility_proof_spine_demo.py`
+- `test_admissibility_proof_spine.py`
+- `docs/admissibility_proof_spine_v0.1.md`
+- `docs/ADMISSIBILITY_PROOF_SPINE_PROOF_PACK_v0.1.md`
+
+### Run
+
+```bash
+python -m examples.admissibility_proof_spine_demo
+```
+
+### Expected result
+
+```
+verdict       = HOLD
+stop_state    = RED
+consequence_bound = false
+```
+
+### Tests
+
+```bash
+pytest test_admissibility_proof_spine.py -v
+pytest test_stop_machine.py test_admissibility_proof_spine.py -v
+```
+
+### Claim boundary
+
+This proves only that clean evidence cannot upgrade an inadmissible transition on the demonstrated path.
+
+It does not claim production readiness, compliance, universal coverage, side-effect enforcement, or field adoption.
