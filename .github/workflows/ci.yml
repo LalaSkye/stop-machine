@@ -94,12 +94,23 @@ jobs:
           python3 /tmp/validate_fixtures.py
       - name: Generate verification receipt
         run: python scripts/verify_adversarial_surface_gate.py
+      - name: Generate adversarial corpus manifest
+        run: python scripts/generate_adversarial_corpus_manifest.py
+      - name: Run adversarial corpus manifest checks
+        run: python -m pytest test_adversarial_corpus_manifest.py -v
       - name: Upload verification receipt
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: surface-gate-receipt-${{ matrix.python-version }}-${{ github.run_id }}
           path: tests/adversarial/latest_surface_gate_verification_receipt.json
+          if-no-files-found: warn
+      - name: Upload adversarial corpus manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: adversarial-corpus-manifest-${{ matrix.python-version }}-${{ github.run_id }}
+          path: tests/adversarial/latest_adversarial_corpus_manifest.json
           if-no-files-found: warn
 
   geometry-analysis:
@@ -178,5 +189,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: geometry-artifacts-${{ github.run_id }}
-          path: artifacts/geometry/**
-          if-no-files-found: warn
+          path: artifacts/geometry
+          if-no-files-found: ignore
