@@ -20,7 +20,6 @@ from __future__ import annotations
 import pytest
 
 from adversarial_surface_gate import SurfaceProbe, evaluate_surface
-from admissibility_proof_spine import AdmissibilityProofSpine
 
 
 def _spine_would_run(receipt) -> bool:

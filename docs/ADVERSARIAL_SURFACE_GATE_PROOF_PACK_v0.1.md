@@ -39,7 +39,7 @@ If the input surface attempts to invert a rule, over-interpret intent, inject pa
 - `adversarial_surface_gate.py` — deterministic pre-admissibility surface gate
 - `test_adversarial_surface_gate.py` — adversarial coverage tests
 - `examples/adversarial_surface_gate_demo.py` — runnable demonstration
-- `tests/fixtures/adversarial_surface_gate/*.json` — fixture receipts for core pressure classes
+- `tests/fixtures/adversarial_surface_gate/v0.1/*.json` — fixture receipts for core pressure classes
 - `docs/ADVERSARIAL_SURFACE_GATE_PROOF_PACK_v0.1.md` — this file
 
 ---
