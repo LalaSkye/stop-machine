@@ -1,278 +1,57 @@
-[![CI](https://github.com/LalaSkye/stop-machine/actions/workflows/ci.yml/badge.svg)](https://github.com/LalaSkye/stop-machine/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
-[![stdlib only](https://img.shields.io/badge/dependencies-stdlib%20only-brightgreen)](stop_machine.py)
-[![Lines of code](https://img.shields.io/badge/%3C200%20LOC-implementation-lightgrey)](stop_machine.py)
-[![Geometry Layer v0](https://img.shields.io/badge/Geometry_Layer-v0_FROZEN-blue)](docs/geometry_export_spec_v0.1.md)
+**Boundary:** In-process code can still poke `_state`; out-of-process tampering is out of scope. `__slots__` and a read-only `state` property reduce accidental mutation. They do not make this a vault.
 
 # stop-machine
 
-## What this does not prove
+A deterministic three-state controller for one bounded claim:
 
-This repository does not prove adoption, certification, standardisation, or production readiness.
+> Through the public interface, once the machine reaches RED, it cannot leave RED.
 
-It demonstrates a bounded execution-control surface that can be run, inspected, and tested.
+It does not intercept arbitrary effects. The caller must place the check before the function it wants to protect.
 
-## Try in 30 seconds
-
-```bash
-git clone https://github.com/LalaSkye/stop-machine.git
-cd stop-machine
-python -m examples.basic_stop
-```
-
-**Expected output:** Machine refuses the unsafe action and logs a receipt.
-
-**A deterministic three-state stop controller. Once RED, nothing runs.**
-
-## Why This Exists
-
-AI systems need a real stop button, not a suggestion. Stop conditions in most systems are afterthoughts — flags checked late, states that can be bypassed, or halts that leave the system in an undefined residual state.
-
-This primitive makes stopping a mechanical, fail-closed property of the system. Three states. One direction. No reversal. No configuration can override a terminal RED. No runtime condition can reset it. If your system needs a provably terminal stop, this is the brick.
-
-## States
-
-```
-  ┌───────┐   advance()   ┌───────┐   advance()   ┌─────────────┐
-  │       │  ──────────►  │       │  ──────────►  │             │
-  │ GREEN │               │ AMBER │               │  RED        │
-  │       │               │       │               │  (terminal) │
-  └───────┘               └───────┘               └─────────────┘
-                                                         │
-                                                  advance() raises
-                                                  TerminalStateError
-```
-
-RED is terminal. No implicit transitions. No global state. Fail-closed: invalid transitions raise, they do not silently proceed.
-
-## Quick Start
+## Run the tests
 
 ```bash
-git clone https://github.com/LalaSkye/stop-machine.git
-cd stop-machine
-python -c "
-from stop_machine import StopMachine, State
+python -m pip install pytest
+python -m pytest -q
+```
 
-m = StopMachine()
-print(m.state)        # State.GREEN
-m.advance()
-print(m.state)        # State.AMBER
-m.advance()
-print(m.state)        # State.RED
-"
+CI runs the same tests on Python 3.10, 3.11 and 3.12.
+
+## One example
+
+The example wraps one function. When the machine is RED, that function is not called.
+
+```bash
+python -m examples.red_blocks_action
 ```
 
 Expected output:
 
-```
-State.GREEN
-State.AMBER
-State.RED
-```
-
-## Usage
-
-### Basic advancement
-
-```python
-from stop_machine import StopMachine, State
-
-m = StopMachine()          # starts GREEN
-m.advance()                # -> AMBER
-m.advance()                # -> RED (terminal)
-m.advance()                # raises TerminalStateError
-```
-
-### Explicit transitions
-
-```python
-m = StopMachine()
-m.transition_to(State.AMBER)   # ok
-m.transition_to(State.GREEN)   # raises InvalidTransitionError
-```
-
-### Reset
-
-```python
-m = StopMachine()
-m.advance()                        # -> AMBER
-m.reset()                          # -> GREEN
-
-m = StopMachine(State.RED)
-m.reset()                          # raises TerminalStateError
-```
-
-### Checking state before acting
-
-```python
-m = StopMachine()
-
-if m.state == State.GREEN:
-    # safe to proceed
-    do_work()
-    m.advance()            # move to AMBER after first signal
-
-if m.state == State.AMBER:
-    # proceed with caution
-    do_cautious_work()
-    m.advance()            # -> RED, terminal
-```
-
-## Run Tests
-
-```bash
-pytest test_stop_machine.py -v
-```
-
-Example output:
-
-```
-test_stop_machine.py::test_initial_state PASSED
-test_stop_machine.py::test_advance_green_to_amber PASSED
-test_stop_machine.py::test_advance_amber_to_red PASSED
-test_stop_machine.py::test_terminal_raises PASSED
-test_stop_machine.py::test_explicit_transition_ok PASSED
-test_stop_machine.py::test_invalid_transition_raises PASSED
-test_stop_machine.py::test_reset_from_red PASSED
-...
-```
-
-## Constraints
-
-- Deterministic behaviour only
-- No global state
-- < 200 LOC implementation
-- All transitions explicit
-- RED is terminal
-- Fail-closed control: undefined transitions are errors, not silent passes
-
-## Docs
-
-- [Geometry Export Spec v0.1](docs/geometry_export_spec_v0.1.md) — log schema, artefact paths, and determinism rules for Geometry Layer v0 (experimental, analysis-only)
-
-## Part of the Execution Boundary Series
-
-| Repo | Layer | What It Does |
-|---|---|---|
-| [interpretation-boundary-lab](https://github.com/LalaSkye/interpretation-boundary-lab) | Upstream boundary | 10-rule admissibility gate for interpretations |
-| [dual-boundary-admissibility-lab](https://github.com/LalaSkye/dual-boundary-admissibility-lab) | Full corridor | Dual-boundary model with pressure monitoring and C-sector rotation |
-| [execution-boundary-lab](https://github.com/LalaSkye/execution-boundary-lab) | Execution boundary | Demonstrates cascading failures without upstream governance |
-| [stop-machine](https://github.com/LalaSkye/stop-machine) | Control primitive | Deterministic three-state stop controller |
-| [constraint-workshop](https://github.com/LalaSkye/constraint-workshop) | Control primitives | Execution gate, invariant litmus, stop machine |
-| [csgr-lab](https://github.com/LalaSkye/csgr-lab) | Measurement | Contracted stability and drift measurement |
-| [invariant-lock](https://github.com/LalaSkye/invariant-lock) | Drift prevention | Refuse execution unless version increments |
-| [policy-lint](https://github.com/LalaSkye/policy-lint) | Policy validation | Deterministic linter for governance statements |
-| [deterministic-lexicon](https://github.com/LalaSkye/deterministic-lexicon) | Vocabulary | Fixed terms, exact matches, no inference |
-
-## License
-
-MIT
-
----
-
-## Authorship & Rights
-
-All architecture, methods, and system designs in this repository are the original work of **Ricky Dean Jones** unless otherwise stated.
-No rights to use, reproduce, or implement are granted without explicit permission beyond the terms of the repository licence.
-
-**Author:** Ricky Dean Jones
-**Repository owner:** [LalaSkye](https://github.com/LalaSkye)
-**Status:** Active research / architecture work
-**Part of:** [Execution Boundary Series](https://github.com/LalaSkye) — TrinityOS / AlvianTech
-
----
-
-This repository demonstrates deterministic control using standard engineering techniques. No proprietary frameworks or external implementations are used.
-
----
-
-## Admissibility Proof Spine v0.1
-
-A narrow, bounded demonstration that a complete evidence record cannot upgrade an inadmissible transition into an admissible one on the demonstrated path.
-
-Files:
-
-- `admissibility_proof_spine.py`
-- `examples/admissibility_proof_spine_demo.py`
-- `test_admissibility_proof_spine.py`
-- `docs/admissibility_proof_spine_v0.1.md`
-- `docs/ADMISSIBILITY_PROOF_SPINE_PROOF_PACK_v0.1.md`
-
-### Run
-
-```bash
-python -m examples.admissibility_proof_spine_demo
-```
-
-### Expected result
-
 ```text
-verdict       = HOLD
-stop_state    = RED
-consequence_bound = false
+RED: action not run
 ```
 
-### Tests
+## Public interface
 
-```bash
-pytest test_admissibility_proof_spine.py -v
-pytest test_stop_machine.py test_admissibility_proof_spine.py -v
+```python
+from stop_machine import State, StopMachine
+
+machine = StopMachine()
+machine.advance()                 # GREEN -> AMBER
+machine.transition_to(State.RED)  # AMBER -> RED
+machine.advance()                 # raises TerminalStateError
 ```
 
-### Claim boundary
+- `state` is readable and has no public setter.
+- `__slots__` prevents undeclared instance attributes.
+- `advance()` permits GREEN → AMBER → RED.
+- `transition_to()` permits only the immediate next state.
+- `reset()` can return GREEN or AMBER to GREEN, but cannot leave RED.
 
-This proves only that clean evidence cannot upgrade an inadmissible transition on the demonstrated path.
+## Claim ceiling
 
-It does not claim production readiness, compliance, universal coverage, side-effect enforcement, or field adoption.
+This repository demonstrates only the public-interface behaviour tested here. It does not claim tamper-proofing, process isolation, enforcement against hostile in-process code, production readiness, certification, or universal safety.
 
----
+## Licence
 
-## Adversarial Surface Gate v0.1
-
-A deterministic pre-admissibility gate for adversarial or unstable input surfaces.
-
-It demonstrates that four surface pressures fail closed before execution on the demonstrated path:
-
-- negation override
-- interpretation drift
-- paradox injection
-- unauthorised frame rotation / geometry rotation
-
-Files:
-
-- `adversarial_surface_gate.py`
-- `test_adversarial_surface_gate.py`
-- `examples/adversarial_surface_gate_demo.py`
-- `docs/ADVERSARIAL_SURFACE_GATE_PROOF_PACK_v0.1.md`
-- `tests/fixtures/adversarial_surface_gate/*.json`
-
-### Run
-
-```bash
-python -m examples.adversarial_surface_gate_demo
-```
-
-### Expected result
-
-```text
-clean_input           -> ALLOW / GREEN / execution_allowed true
-negation_override     -> DENY  / RED   / execution_allowed false
-interpretation_drift  -> HOLD  / RED   / execution_allowed false
-paradox_injection     -> DENY  / RED   / execution_allowed false
-rotation_geometry     -> HOLD  / RED   / execution_allowed false
-mixed_pressure        -> DENY  / RED   / execution_allowed false
-```
-
-### Tests
-
-```bash
-pytest test_adversarial_surface_gate.py -v
-pytest test_stop_machine.py test_admissibility_proof_spine.py test_adversarial_surface_gate.py -v
-```
-
-### Claim boundary
-
-This proves only that, on the demonstrated path, negation override, interpretation drift, paradox injection, and unauthorised frame rotation are refused or held before execution.
-
-It does not prove prompt-injection immunity, semantic completeness, production readiness, universal adversarial coverage, legal sufficiency, compliance, or safety of all agentic systems.
+MIT. See [LICENSE](LICENSE).

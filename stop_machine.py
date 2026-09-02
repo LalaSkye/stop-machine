@@ -1,11 +1,8 @@
-# CANONICAL SOURCE: LalaSkye/constraint-workshop/stop_machine.py
-# PINNED COMMIT: 8d04cbc1e8e6576641962d5d3c866b0517ad596e
-# Semantics aligned to canonical: RED is terminal, reset() blocked from RED.
-
 """A deterministic three-state stop controller.
 
-States: GREEN -> AMBER -> RED
-RED is terminal. No implicit transitions.
+The public interface exposes read-only state and explicit transitions.
+RED is terminal through that interface. Direct in-process mutation of the
+private ``_state`` attribute remains possible and is outside the guarantee.
 """
 
 from enum import Enum, unique
@@ -13,14 +10,13 @@ from enum import Enum, unique
 
 @unique
 class State(Enum):
-    """The three possible states of the stop machine."""
+    """The three possible stop states."""
+
     GREEN = "GREEN"
     AMBER = "AMBER"
     RED = "RED"
 
 
-# Explicit transition table. Maps (current_state) -> allowed next state.
-# RED has no entry because it is terminal.
 _TRANSITIONS = {
     State.GREEN: State.AMBER,
     State.AMBER: State.RED,
@@ -28,61 +24,48 @@ _TRANSITIONS = {
 
 
 class TerminalStateError(Exception):
-    """Raised when a transition is attempted from a terminal state."""
+    """Raised when a public transition is attempted from RED."""
 
 
 class InvalidTransitionError(Exception):
-    """Raised when a transition targets a state not permitted."""
+    """Raised when a target is not the permitted next state."""
 
 
 class StopMachine:
-    """A three-state stop controller.
+    """A small state controller whose public interface cannot leave RED."""
 
-    Starts at a given state (default GREEN).
-    Transitions are explicit and deterministic.
-    RED is terminal: no further transitions are allowed.
-    """
+    __slots__ = ("_state",)
 
     def __init__(self, initial: State = State.GREEN) -> None:
         self._state = initial
 
     @property
     def state(self) -> State:
-        """Return the current state."""
+        """Return the current state; no public setter is provided."""
+
         return self._state
 
     @property
     def is_terminal(self) -> bool:
-        """Return True if the machine is in a terminal state."""
-        return self._state == State.RED
+        """Return whether the current state is RED."""
+
+        return self._state is State.RED
 
     def advance(self) -> State:
-        """Move to the next state in the sequence.
+        """Advance GREEN to AMBER or AMBER to RED."""
 
-        Raises TerminalStateError if already RED.
-        Returns the new state.
-        """
         if self.is_terminal:
-            raise TerminalStateError(
-                f"Cannot advance: {self._state.value} is terminal."
-            )
+            raise TerminalStateError("Cannot advance: RED is terminal.")
         self._state = _TRANSITIONS[self._state]
         return self._state
 
     def transition_to(self, target: State) -> State:
-        """Transition to a specific target state.
+        """Move to the permitted next state, or fail explicitly."""
 
-        Only the immediate next state in the sequence is allowed.
-        Raises TerminalStateError if already RED.
-        Raises InvalidTransitionError if target is not the next state.
-        Returns the new state.
-        """
         if self.is_terminal:
-            raise TerminalStateError(
-                f"Cannot transition: {self._state.value} is terminal."
-            )
+            raise TerminalStateError("Cannot transition: RED is terminal.")
         expected = _TRANSITIONS[self._state]
-        if target != expected:
+        if target is not expected:
             raise InvalidTransitionError(
                 f"Cannot transition from {self._state.value} to "
                 f"{target.value}. Expected {expected.value}."
@@ -91,11 +74,10 @@ class StopMachine:
         return self._state
 
     def reset(self) -> State:
-        """Reset the machine to GREEN. Forbidden once RED is reached."""
+        """Return GREEN or AMBER to GREEN; RED cannot be reset publicly."""
+
         if self.is_terminal:
-            raise TerminalStateError(
-                f"Cannot reset: {self._state.value} is terminal."
-            )
+            raise TerminalStateError("Cannot reset: RED is terminal.")
         self._state = State.GREEN
         return self._state
 

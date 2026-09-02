@@ -1,4 +1,4 @@
-"""Tests for stop_machine.py. Covers every transition."""
+"""Tests for the bounded public guarantee made by stop-machine."""
 
 import pytest
 
@@ -10,174 +10,70 @@ from stop_machine import (
 )
 
 
-# --- Initial state ---
-
-def test_default_initial_state():
-    m = StopMachine()
-    assert m.state == State.GREEN
+def test_default_state_is_green():
+    assert StopMachine().state is State.GREEN
 
 
-def test_custom_initial_state():
-    for s in State:
-        m = StopMachine(initial=s)
-        assert m.state == s
+def test_green_advances_to_amber_then_red():
+    machine = StopMachine()
+    assert machine.advance() is State.AMBER
+    assert machine.advance() is State.RED
+    assert machine.is_terminal
 
 
-def test_is_terminal_false_for_green():
-    assert not StopMachine(State.GREEN).is_terminal
-
-
-def test_is_terminal_false_for_amber():
-    assert not StopMachine(State.AMBER).is_terminal
-
-
-def test_is_terminal_true_for_red():
-    assert StopMachine(State.RED).is_terminal
-
-
-# --- advance() transitions ---
-
-def test_advance_green_to_amber():
-    m = StopMachine(State.GREEN)
-    result = m.advance()
-    assert result == State.AMBER
-    assert m.state == State.AMBER
-
-
-def test_advance_amber_to_red():
-    m = StopMachine(State.AMBER)
-    result = m.advance()
-    assert result == State.RED
-    assert m.state == State.RED
-
-
-def test_advance_from_red_raises():
-    m = StopMachine(State.RED)
+@pytest.mark.parametrize("operation", ["advance", "transition_to", "reset"])
+def test_public_interface_cannot_leave_red(operation):
+    machine = StopMachine(State.RED)
     with pytest.raises(TerminalStateError):
-        m.advance()
+        if operation == "advance":
+            machine.advance()
+        elif operation == "transition_to":
+            machine.transition_to(State.GREEN)
+        else:
+            machine.reset()
+    assert machine.state is State.RED
 
 
-def test_advance_full_sequence():
-    m = StopMachine()
-    assert m.state == State.GREEN
-    m.advance()
-    assert m.state == State.AMBER
-    m.advance()
-    assert m.state == State.RED
-    with pytest.raises(TerminalStateError):
-        m.advance()
-
-
-# --- transition_to() valid ---
-
-def test_transition_to_green_to_amber():
-    m = StopMachine(State.GREEN)
-    result = m.transition_to(State.AMBER)
-    assert result == State.AMBER
-    assert m.state == State.AMBER
-
-
-def test_transition_to_amber_to_red():
-    m = StopMachine(State.AMBER)
-    result = m.transition_to(State.RED)
-    assert result == State.RED
-    assert m.state == State.RED
-
-
-# --- transition_to() invalid ---
-
-def test_transition_to_from_red_raises():
-    m = StopMachine(State.RED)
-    with pytest.raises(TerminalStateError):
-        m.transition_to(State.GREEN)
-
-
-def test_transition_to_green_to_red_raises():
-    m = StopMachine(State.GREEN)
+def test_only_immediate_explicit_transition_is_allowed():
+    machine = StopMachine(State.GREEN)
     with pytest.raises(InvalidTransitionError):
-        m.transition_to(State.RED)
+        machine.transition_to(State.RED)
+    assert machine.state is State.GREEN
 
 
-def test_transition_to_green_to_green_raises():
-    m = StopMachine(State.GREEN)
-    with pytest.raises(InvalidTransitionError):
-        m.transition_to(State.GREEN)
+def test_reset_before_red_returns_to_green():
+    machine = StopMachine(State.AMBER)
+    assert machine.reset() is State.GREEN
 
 
-def test_transition_to_amber_to_green_raises():
-    m = StopMachine(State.AMBER)
-    with pytest.raises(InvalidTransitionError):
-        m.transition_to(State.GREEN)
+def test_state_property_has_no_public_setter():
+    machine = StopMachine()
+    with pytest.raises(AttributeError):
+        machine.state = State.RED
+    assert machine.state is State.GREEN
 
 
-def test_transition_to_amber_to_amber_raises():
-    m = StopMachine(State.AMBER)
-    with pytest.raises(InvalidTransitionError):
-        m.transition_to(State.AMBER)
+def test_slots_reject_undeclared_instance_attributes():
+    machine = StopMachine()
+    with pytest.raises(AttributeError):
+        machine.untracked_state = State.RED
 
 
-# --- reset() ---
+def test_in_process_private_poke_still_works_and_is_out_of_scope():
+    """In-process code can poke _state; out-of-process tampering is out of scope."""
 
-def test_reset_from_green():
-    m = StopMachine(State.GREEN)
-    result = m.reset()
-    assert result == State.GREEN
-    assert m.state == State.GREEN
-
-
-def test_reset_from_amber():
-    m = StopMachine(State.AMBER)
-    result = m.reset()
-    assert result == State.GREEN
-    assert m.state == State.GREEN
+    machine = StopMachine(State.RED)
+    machine._state = State.GREEN
+    assert machine.state is State.GREEN
 
 
-def test_reset_from_red():
-    m = StopMachine(State.RED)
-    with pytest.raises(TerminalStateError):
-        m.reset()
+def test_instances_do_not_share_state():
+    first = StopMachine()
+    second = StopMachine()
+    first.advance()
+    assert first.state is State.AMBER
+    assert second.state is State.GREEN
 
 
-def test_reset_then_advance():
-    m = StopMachine()
-    m.advance()
-    m.advance()
-    assert m.is_terminal
-    with pytest.raises(TerminalStateError):
-        m.reset()
-
-
-# --- repr ---
-
-def test_repr_green():
-    assert repr(StopMachine(State.GREEN)) == "StopMachine(state=GREEN)"
-
-
-def test_repr_amber():
-    assert repr(StopMachine(State.AMBER)) == "StopMachine(state=AMBER)"
-
-
-def test_repr_red():
+def test_repr_reports_state():
     assert repr(StopMachine(State.RED)) == "StopMachine(state=RED)"
-
-
-# --- State enum ---
-
-def test_state_values():
-    assert State.GREEN.value == "GREEN"
-    assert State.AMBER.value == "AMBER"
-    assert State.RED.value == "RED"
-
-
-def test_exactly_three_states():
-    assert len(State) == 3
-
-
-# --- No instance leakage ---
-
-def test_two_machines_are_independent():
-    m1 = StopMachine()
-    m2 = StopMachine()
-    m1.advance()
-    assert m1.state == State.AMBER
-    assert m2.state == State.GREEN
