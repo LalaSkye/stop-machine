@@ -53,6 +53,8 @@ jobs:
         run: python -m pytest tests/ -v
       - name: Run adversarial surface gate fixture harness
         run: python -m pytest test_adversarial_surface_fixtures.py -v
+      - name: Run adversarial surface gate tests
+        run: python -m pytest test_adversarial_surface_gate.py -v
       - name: Run surface-to-spine integration tests
         run: python -m pytest test_surface_to_spine_integration.py -v
       - name: Validate fixture schema
@@ -66,15 +68,15 @@ jobs:
               sys.exit(0)
 
           schema_path = "schemas/adversarial_surface_fixture.schema.json"
-          fixture_glob = "tests/fixtures/adversarial_surface_gate/*.json"
+          fixture_glob = "tests/fixtures/adversarial_surface_gate/**/*.json"
 
           with open(schema_path) as f:
               schema = json.load(f)
 
-          files = sorted(glob.glob(fixture_glob))
+          files = sorted(glob.glob(fixture_glob, recursive=True))
           if not files:
-              print("No fixtures found — nothing to validate")
-              sys.exit(0)
+              print("No fixtures found — fail-closed")
+              sys.exit(1)
 
           failures = []
           for path in files:
@@ -144,7 +146,7 @@ jobs:
           exits = {}
 
           for path in files:
-              with open(path, "r", encoding="utf-8") as fh:
+              with open(path) as fh:
                   for lineno, raw in enumerate(fh, 1):
                       raw = raw.strip()
                       if not raw:
