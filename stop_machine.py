@@ -1,11 +1,7 @@
-# CANONICAL SOURCE: LalaSkye/constraint-workshop/stop_machine.py
-# PINNED COMMIT: 8d04cbc1e8e6576641962d5d3c866b0517ad596e
-# Semantics aligned to canonical: RED is terminal, reset() blocked from RED.
+"""Halt primitive. Polite callers cannot leave RED.
 
-"""A deterministic three-state stop controller.
-
-States: GREEN -> AMBER -> RED
-RED is terminal. No implicit transitions.
+Ceiling: same-process poke via object.__setattr__ still works.
+This is not a vault. It is a brake on the public methods.
 """
 
 from enum import Enum, unique
@@ -13,14 +9,11 @@ from enum import Enum, unique
 
 @unique
 class State(Enum):
-    """The three possible states of the stop machine."""
     GREEN = "GREEN"
     AMBER = "AMBER"
     RED = "RED"
 
 
-# Explicit transition table. Maps (current_state) -> allowed next state.
-# RED has no entry because it is terminal.
 _TRANSITIONS = {
     State.GREEN: State.AMBER,
     State.AMBER: State.RED,
@@ -28,76 +21,53 @@ _TRANSITIONS = {
 
 
 class TerminalStateError(Exception):
-    """Raised when a transition is attempted from a terminal state."""
+    pass
 
 
 class InvalidTransitionError(Exception):
-    """Raised when a transition targets a state not permitted."""
+    pass
 
 
 class StopMachine:
-    """A three-state stop controller.
-
-    Starts at a given state (default GREEN).
-    Transitions are explicit and deterministic.
-    RED is terminal: no further transitions are allowed.
-    """
+    __slots__ = ("_state",)
 
     def __init__(self, initial: State = State.GREEN) -> None:
-        self._state = initial
+        object.__setattr__(self, "_state", initial)
+
+    def __setattr__(self, name: str, value: object) -> None:
+        raise AttributeError("state only moves through advance, transition_to, reset")
 
     @property
     def state(self) -> State:
-        """Return the current state."""
-        return self._state
+        return object.__getattribute__(self, "_state")
 
     @property
     def is_terminal(self) -> bool:
-        """Return True if the machine is in a terminal state."""
-        return self._state == State.RED
+        return self.state == State.RED
+
+    def _set(self, nxt: State) -> State:
+        object.__setattr__(self, "_state", nxt)
+        return nxt
 
     def advance(self) -> State:
-        """Move to the next state in the sequence.
-
-        Raises TerminalStateError if already RED.
-        Returns the new state.
-        """
         if self.is_terminal:
-            raise TerminalStateError(
-                f"Cannot advance: {self._state.value} is terminal."
-            )
-        self._state = _TRANSITIONS[self._state]
-        return self._state
+            raise TerminalStateError("RED is terminal")
+        return self._set(_TRANSITIONS[self.state])
 
     def transition_to(self, target: State) -> State:
-        """Transition to a specific target state.
-
-        Only the immediate next state in the sequence is allowed.
-        Raises TerminalStateError if already RED.
-        Raises InvalidTransitionError if target is not the next state.
-        Returns the new state.
-        """
         if self.is_terminal:
-            raise TerminalStateError(
-                f"Cannot transition: {self._state.value} is terminal."
-            )
-        expected = _TRANSITIONS[self._state]
+            raise TerminalStateError("RED is terminal")
+        expected = _TRANSITIONS[self.state]
         if target != expected:
             raise InvalidTransitionError(
-                f"Cannot transition from {self._state.value} to "
-                f"{target.value}. Expected {expected.value}."
+                f"{self.state.value} -> {target.value} not allowed"
             )
-        self._state = target
-        return self._state
+        return self._set(target)
 
     def reset(self) -> State:
-        """Reset the machine to GREEN. Forbidden once RED is reached."""
         if self.is_terminal:
-            raise TerminalStateError(
-                f"Cannot reset: {self._state.value} is terminal."
-            )
-        self._state = State.GREEN
-        return self._state
+            raise TerminalStateError("cannot reset RED")
+        return self._set(State.GREEN)
 
     def __repr__(self) -> str:
-        return f"StopMachine(state={self._state.value})"
+        return f"StopMachine(state={self.state.value})"
