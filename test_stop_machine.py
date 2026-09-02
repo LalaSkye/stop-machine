@@ -10,8 +10,6 @@ from stop_machine import (
 )
 
 
-# --- Initial state ---
-
 def test_default_initial_state():
     m = StopMachine()
     assert m.state == State.GREEN
@@ -34,8 +32,6 @@ def test_is_terminal_false_for_amber():
 def test_is_terminal_true_for_red():
     assert StopMachine(State.RED).is_terminal
 
-
-# --- advance() transitions ---
 
 def test_advance_green_to_amber():
     m = StopMachine(State.GREEN)
@@ -68,8 +64,6 @@ def test_advance_full_sequence():
         m.advance()
 
 
-# --- transition_to() valid ---
-
 def test_transition_to_green_to_amber():
     m = StopMachine(State.GREEN)
     result = m.transition_to(State.AMBER)
@@ -83,8 +77,6 @@ def test_transition_to_amber_to_red():
     assert result == State.RED
     assert m.state == State.RED
 
-
-# --- transition_to() invalid ---
 
 def test_transition_to_from_red_raises():
     m = StopMachine(State.RED)
@@ -116,8 +108,6 @@ def test_transition_to_amber_to_amber_raises():
         m.transition_to(State.AMBER)
 
 
-# --- reset() ---
-
 def test_reset_from_green():
     m = StopMachine(State.GREEN)
     result = m.reset()
@@ -147,8 +137,6 @@ def test_reset_then_advance():
         m.reset()
 
 
-# --- repr ---
-
 def test_repr_green():
     assert repr(StopMachine(State.GREEN)) == "StopMachine(state=GREEN)"
 
@@ -161,8 +149,6 @@ def test_repr_red():
     assert repr(StopMachine(State.RED)) == "StopMachine(state=RED)"
 
 
-# --- State enum ---
-
 def test_state_values():
     assert State.GREEN.value == "GREEN"
     assert State.AMBER.value == "AMBER"
@@ -173,11 +159,26 @@ def test_exactly_three_states():
     assert len(State) == 3
 
 
-# --- No instance leakage ---
-
 def test_two_machines_are_independent():
     m1 = StopMachine()
     m2 = StopMachine()
     m1.advance()
     assert m1.state == State.AMBER
     assert m2.state == State.GREEN
+
+
+def test_polite_state_write_blocked():
+    m = StopMachine()
+    m.advance()
+    m.advance()
+    with pytest.raises(AttributeError):
+        m._state = State.GREEN
+    assert m.state == State.RED
+
+
+def test_documented_poke_still_works():
+    m = StopMachine()
+    m.advance()
+    m.advance()
+    object.__setattr__(m, "_state", State.GREEN)
+    assert m.state == State.GREEN
