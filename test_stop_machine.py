@@ -1,5 +1,7 @@
 """Tests for stop_machine.py. Covers every transition."""
 
+import threading
+
 import pytest
 
 from stop_machine import (
@@ -165,6 +167,68 @@ def test_two_machines_are_independent():
     m1.advance()
     assert m1.state == State.AMBER
     assert m2.state == State.GREEN
+
+
+def test_advance_reset_race_cannot_leave_red_as_green():
+    """Force the historical check/write interleaving without timing statistics."""
+
+    class CoordinatedStopMachine(StopMachine):
+        __slots__ = ("red_entered", "green_entered", "red_written")
+
+        def __init__(self) -> None:
+            super().__init__(State.AMBER)
+            object.__setattr__(self, "red_entered", threading.Event())
+            object.__setattr__(self, "green_entered", threading.Event())
+            object.__setattr__(self, "red_written", threading.Event())
+
+        def _set(self, nxt: State) -> State:
+            if nxt is State.RED:
+                self.red_entered.set()
+                self.green_entered.wait(timeout=0.5)
+                result = super()._set(nxt)
+                self.red_written.set()
+                return result
+            if nxt is State.GREEN:
+                self.green_entered.set()
+                if self.red_entered.wait(timeout=0.5):
+                    self.red_written.wait(timeout=0.5)
+                return super()._set(nxt)
+            return super()._set(nxt)
+
+    m = CoordinatedStopMachine()
+    start = threading.Barrier(3)
+    unexpected = []
+
+    def run_advance():
+        start.wait()
+        try:
+            m.advance()
+        except Exception as exc:
+            unexpected.append(exc)
+
+    def run_reset():
+        start.wait()
+        try:
+            m.reset()
+        except TerminalStateError:
+            pass
+        except Exception as exc:
+            unexpected.append(exc)
+
+    advance_thread = threading.Thread(target=run_advance)
+    reset_thread = threading.Thread(target=run_reset)
+    advance_thread.start()
+    reset_thread.start()
+    start.wait()
+
+    advance_thread.join(timeout=2)
+    reset_thread.join(timeout=2)
+
+    assert not advance_thread.is_alive()
+    assert not reset_thread.is_alive()
+    assert unexpected == []
+    assert m.state in {State.RED, State.AMBER}
+    assert m.state is not State.GREEN
 
 
 def test_polite_state_write_blocked():
